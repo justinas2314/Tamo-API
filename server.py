@@ -205,8 +205,6 @@ def docs():
        Norint perskaityti dokumentacija reikia padaryti "get" request, o norint naudotis API - "post".</p>
     <p>Prieš naudojantis API reikia atidaryti Tamo Session "/log_in"</p>
     <p>"/log_in" session ištrinamas po 30 minučių</p>
-    <p>Nors "/log_in" ir sukuria session, bet 'password' ir 'username' reikia siuntinėti
-       su kiekvienu request, nes šis serveris naudoja 'password' ir 'username' kombinacija vietoj hash, kad identifikuotų users.</p>
     <p>Vienas account gali daryti tik 1 request per sekundę, jei serveris pastebės, kad tarp dviejų requests
       buvo mažiau negu sekundės laiko tarpas, tai mes error.</p>
     <p><b>Galimi naudoti puslapiai:</b></p>
