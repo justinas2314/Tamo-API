@@ -7,7 +7,7 @@ Tamo priverčia po tam tikro laiko tarpo atsijungti, šis API to neatpažins, to
 Šis API nėra oficialus, jei tamo.lt nuspręstų pakeisti savo puslapį, tai šis API nustotų veikti iki kol aš jį atnaujinčiau, todėl šis API neturėtų būti naudojamas labai rimtuose projektuose.  
 Šis API pagrinde daro tą patį, ką darytų žmogus naršyklėje tik greičiau ir efektyviau. Jeigu Tamo atpažintų, kad tai nėra naršyklė, o web scraper, tai kaltininko paskyra galėtų sulaukti **ban**. Testuojant šį API savo paskyroje, ban negavau, tai bent kol kas nemanau, kad Tamo tai tikrina, tačiau tas galėtų pasikeisti bet kurią akimirką. Kad būtų mažesnė tikimybė gauti ban tarp requests reiktų padaryti kelių sekundžių pauzę.
 ## Kaip naudotis?
-Susiinstaliuoti `beautifulsoup4` ir, priklausomai nuo pasirinktos versijos, arba `requests`, arba `aiohttp`.  
+Susiinstaliuoti [beautifulsoup4](https://pypi.org/project/beautifulsoup4/) ir, priklausomai nuo pasirinktos versijos, arba [requests](https://pypi.org/project/requests/), arba [aiohttp](https://pypi.org/project/aiohttp/).  
 `main.py` turėtu būti importuojamas norint naudoti šį API python script.  
 `server.py` turėtu būti naudojamas norint turėti serveri (turbut `http://127.0.0.1:5000/`), kuriuo galima naudotis ir su kitomis programavimo kalbomis.  
 `scraper.py` neturėtu būti importuojamas, tai duobė į kurią aš sumečiau visą script logiką. Vietoj `scraper.py` reiktų naudoti `main.py`, nes `main.py` yra wrapper aplink `scraper.py`.  
