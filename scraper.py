@@ -10,12 +10,13 @@ REGEX = list(map(re.compile,
                      "(....)-(..)-(..), (.*)",
                      "Grupė: (.*?)Dalykas: (.*)",
                      "(.+)",
-                     ".*(....)-(..)-(..).*<div>(.*)</div>"
+                     ".*(....)-(..)-(..).*<div>(.*)</div>",
+                     "(....)-(..)-(..)T(..):(..):(..)"
                  ]))
 
 
-def open_url(session, url):
-    with session.get(url) as r:
+def open_url(session, url, *args, **kwargs):
+    with session.get(url, *args, **kwargs) as r:
         try:
             assert r.status_code == 200
         except AssertionError:
@@ -457,3 +458,115 @@ def pusmeciai(session, parser, pusmecio_id):
         dalykai.append(temp)
     data["dalykai"] = dalykai
     return data
+
+
+def pranesimai(session, page, identification):
+    # 2 more requests if identification is None
+    if identification is None:
+        open_url(session, "https://dienynas.tamo.lt/GoTo/Bendrauk")
+        with session.get("https://api.tamo.lt/messaging/core/roles",
+                         headers={"Accept": "application/json"}) as r:
+            try:
+                assert r.status_code == 200
+            except AssertionError:
+                print("Error inside get_messages")
+                raise
+            else:
+                identification = r.json()["items"][0]["id"]
+    with session.get(f"https://api.tamo.lt/messaging/messages/received?orderDescending=true&searchTerm=&page={page}",
+                     headers={"Accept": "application/json", "x-selected-role": identification}) as r:
+        print(r.text)
+        try:
+            assert r.status_code == 200
+        except AssertionError:
+            print("Error inside get_messages")
+            raise
+        else:
+            raw_data = r.json()
+    data = []
+    for i in raw_data["items"]:
+        first_groups = REGEX[8].match(i["date"]).groups()
+        temp = {
+            "tema": i["subject"],
+            "data": {
+                "y": int(first_groups[0]),
+                "m": int(first_groups[1]),
+                "d": int(first_groups[2]),
+                "h": int(first_groups[3]),
+                "min": int(first_groups[4]),
+                "s": int(first_groups[5])
+            },
+            "siuntejas": i["senderPerson"],
+            "siuntejo tipas": i["senderPersonTitle"],
+            "turi prisegtu files": i["hasAttachments"],
+            "id": i["id"]
+        }
+        try:
+            second_groups = REGEX[8].match(i["readDate"]).groups()
+        except KeyError:
+            temp["perskaitymo data"] = None
+        else:
+            temp["perskaitymo data"] = {
+                "y": int(second_groups[0]),
+                "m": int(second_groups[1]),
+                "d": int(second_groups[2]),
+                "h": int(second_groups[3]),
+                "min": int(second_groups[4]),
+                "s": int(second_groups[5])
+            }
+        data.append(temp)
+    return {"id": identification, "pranesimai": data}
+
+
+def pranesimas(session, message_id, identification):
+    if identification is None:
+        open_url(session, "https://dienynas.tamo.lt/GoTo/Bendrauk")
+        with session.get("https://api.tamo.lt/messaging/core/roles",
+                         headers={"Accept": "application/json"}) as r:
+            try:
+                assert r.status_code == 200
+            except AssertionError:
+                print("Error inside get_message")
+                raise
+            else:
+                identification = r.json()["items"][0]["id"]
+    with session.get(f"https://api.tamo.lt/messaging/messages/received/{message_id}",
+                     headers={"Accept": "application/json", "x-selected-role": identification}) as r:
+        try:
+            assert r.status_code == 200
+        except AssertionError:
+            print("Error inside get_message")
+            raise
+        else:
+            raw_data = r.json()
+    try:
+        data = {
+            "html tekstas": raw_data["item"]["body"],
+            "tekstas": raw_data["item"]["bodyPlain"]
+        }
+    except KeyError:
+        raise FileNotFoundError  # incorrect message_id
+    attachments = []
+    for i in raw_data["attachments"]:
+        attachments.append({
+            "pavadinimas": i["name"],
+            "id": i["sid"]
+        })
+    data["prisegti files"] = attachments
+    return data
+
+
+def file_url(session, file_id):
+    with session.post("https://api.tamo.lt/files/filedownloadurl",
+                      headers={"Content-Type": "application/json"},
+                      json={"fileSid": file_id}) as r:
+        try:
+            assert r.status_code == 200
+        except AssertionError:
+            if r.status_code == 404:
+                raise FileNotFoundError
+            else:
+                print("Error inside get_file_link")
+                raise
+        else:
+            return r.json()

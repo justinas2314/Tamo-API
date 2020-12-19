@@ -5,6 +5,10 @@ import scraper
 
 
 class TamoSession:
+    """
+    Tamo paskyra atjungia po tam tikro laiko tarpo ir šis API nežino kada tai įvyks, tai jeigu
+    kažkas nesigauna galima bandyti per naują prisijungti su nauju TamoSession()
+    """
     def __init__(self, username: str, password: str, *, parser: str = "html.parser", check_incorrect_login: bool = True):
         self._parser = parser
         self._session = requests.Session()
@@ -170,11 +174,72 @@ class TamoSession:
                             ],
                             "vidurkis": str or None,
                             "isvesta": str or None
-                        }
+                        }, ...
                     ]
                 }
         """
         return scraper.pusmeciai(self._session, self._parser, pusmecio_id)
+
+    def pranesimai(self, puslapis: int = 1, identification: str = None):
+        """
+        :param identifikacija: str tokenas, kuri reiktu issaugoti jeigu norima
+            naudotis pranesimai ar pranesimas antra karta
+        :return: {
+                    "id": str,  # identification parametras
+                    "pranesimai": [
+                        {
+                            "tema": str,
+                            "data": {
+                                "y": int,
+                                "m": int,
+                                "d": int,
+                                "h": int,
+                                "min": int,
+                                "s": int
+                            },
+                            "siuntejas": str,
+                            "siuntejo tipas": str,
+                            "turi prisegtu files": bool,
+                            "id": int,  # parametras funkcijai pranesimas()
+                            "perskaitymo data": None or {
+                                "y": int,
+                                "m": int,
+                                "d": int,
+                                "h": int,
+                                "min": int,
+                                "s": int
+                            }
+                        }, ...
+                    ]
+                }
+        """
+        return scraper.pranesimai(self._session, puslapis, identification)
+
+    def pranesimas(self, pranesimo_id: int, identifikacija: str = None):
+        """
+        :param message_id: str gaunamas funkcijoje pranesimai()
+        :param identifikacija: str tokenas gaunamas funkcijoje pranesimai(), jeigu None bus gautas naujas
+        :return: {
+                    "html tekstas": str,
+                    "tekstas": str,
+                    "prisegti files": [
+                        {
+                            "pavadinimas": str,
+                            "id": str  # parametras funkcijai file_url()
+                        }, ...
+                    ]
+                }
+        """
+        return scraper.pranesimas(self._session, pranesimo_id, identifikacija)
+
+    def file_url(self, file_id: str):
+        """
+        :param file_id: gaunamas funkcijoj pranesimas()
+        :return: {
+                    "url": str  # url parsisiusti file
+                }
+        """
+        return scraper.file_url(self._session, file_id)
 
     def close(self):
         self._session.close()
