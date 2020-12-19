@@ -11,7 +11,7 @@ Tamo priverčia to tam tikro laiko tarpo atsijungti, šis API to neatpažins, to
 `server.py` turėtu būti naudojamas norint turėti serveri (turbut `http://127.0.0.1:5000/`), kuriuo galima naudotis ir su kitomis programavimo kalbomis.  
 `scraper.py` neturėtu būti importuojamas, tai duobė į kurią aš sumečiau visą script logiką. Vietoj `scraper.py` reiktų naudoti `main.py`, nes `main.py` yra wrapper aplink `scraper.py`.  
 `async` folder yra `main.py` ir `scraper.py` asinchroninės versijos, kurios veikia beveik visiškai taip pat.   
-Kaip naudotis `main.py` galima sužinoti atsidarius `main.py`, o `server.py` atsidarius serverio link (turbut `http://127.0.0.1:5000/`). `main.py`, kaip ir `server.py`, grąžina dict ir list populiuotus primitiviais tipais, visos funkcijos (jų priimami ir grąžinami parametrai) yra tokios pačios.  
+Kaip naudotis `main.py` galima sužinoti atsidarius `main.py`, o `server.py` atsidarius serverio link (turbut `http://127.0.0.1:5000/`). `main.py`, kaip ir `server.py`, grąžina dict ir list populiuotus primityviais tipais, visos funkcijos (jų priimami ir grąžinami parametrai) yra tokios pačios.  
 ## Ką galima su šitu API padaryti?
 Šis API atlieka funkcijas, kurias gali atlikti bet kuris mokinys (neturiu nei premium mokinio, nei mokytojo paskyros, tai nežinau kaip tai veiktų).  
 Šis API negali padaryti 100% to ką gali padaryti tamo.lt svetainė, tačiau gali padaryti pakankamai, kad būtų naudingas tikrinant pažymius/vidurkius/pastabas/pranešimus ir pan.  
