@@ -3,7 +3,7 @@ Tamo.lt scraper that acts as an unofficial API
 The Documentation is in Lithuanian as only people in Lithuania would find this useful.
 ## Perspėjimai
 Norint naudoti API reikia duoti script/server savo prisijungimo duomenis, o tai įprastai yra bloga idėja, tai prašau įsitikinti, kad šis API nieko blogo nedarys.  
-Tamo priverčia to tam tikro laiko tarpo atsijungti, šis API to neatpažins, todėl reikės pasinaudot smegenim ir kas 30-60 min susikurti naują login session.  
+Tamo priverčia po tam tikro laiko tarpo atsijungti, šis API to neatpažins, todėl reikės pasinaudot smegenim ir kas 30-60 min susikurti naują login session.  
 Šis API nėra oficialus, jei tamo.lt nuspręstų pakeisti savo puslapį, tai šis API nustotų veikti iki kol aš jį atnaujinčiau, todėl šis API neturėtų būti naudojamas labai rimtuose projektuose.  
 Šis API pagrinde daro tą patį, ką darytų žmogus naršyklėje tik greičiau ir efektyviau. Jeigu Tamo atpažintų, kad tai nėra naršyklė, o web scraper, tai kaltininko paskyra galėtų sulaukti **ban**. Testuojant šį API savo paskyroje, ban negavau, tai bent kol kas nemanau, kad Tamo tai tikrina, tačiau tas galėtų pasikeisti bet kurią akimirką. 
 ## Kaip naudotis?
