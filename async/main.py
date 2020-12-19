@@ -1,4 +1,4 @@
-import requests
+import aiohttp
 import scraper
 
 
@@ -7,12 +7,15 @@ class TamoSession:
     Tamo paskyra atjungia po tam tikro laiko tarpo ir šis API nežino kada tai įvyks, tai jeigu
     kažkas nesigauna galima bandyti per naują prisijungti su nauju TamoSession()
     """
-    def __init__(self, username: str, password: str, *, parser: str = "html.parser", check_incorrect_login: bool = True):
-        self._parser = parser
-        self._session = requests.Session()
-        scraper.log_in(self._session, parser, username, password, check_incorrect_login)
+    @classmethod
+    async def create(cls, username: str, password: str, *, parser: str = "html.parser", check_incorrect_login: bool = True):
+        tamo_session = TamoSession()
+        tamo_session._parser = parser
+        tamo_session._session = aiohttp.ClientSession()
+        await scraper.log_in(tamo_session._session, parser, username, password, check_incorrect_login)
+        return tamo_session
 
-    def tvarkarastis(self, savaite: str = None):
+    async def tvarkarastis(self, savaite: str = None):
         """
         :param savaite: savaites pradzia formatu "YYYY-MM-DD"
         :return: [
@@ -32,9 +35,9 @@ class TamoSession:
                     }, ...
                 ]
         """
-        return scraper.tvarkarastis(self._session, self._parser, savaite)
+        return await scraper.tvarkarastis(self._session, self._parser, savaite)
 
-    def dienynas(self, metai: int = None, menuo: int = None):
+    async def dienynas(self, metai: int = None, menuo: int = None):
         """
         :return: [
                     {
@@ -50,9 +53,9 @@ class TamoSession:
                     }, ...
                 ]
         """
-        return scraper.dienynas(self._session, self._parser, metai, menuo)
+        return await scraper.dienynas(self._session, self._parser, metai, menuo)
 
-    def pamokos(self, metai: int = None, menuo: int = None):
+    async def pamokos(self, metai: int = None, menuo: int = None):
         """
         :return: [
                     {
@@ -70,9 +73,9 @@ class TamoSession:
                     }, ...
                 ]
         """
-        return scraper.pamokos(self._session, self._parser, metai, menuo)
+        return await scraper.pamokos(self._session, self._parser, metai, menuo)
 
-    def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0):
+    async def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0):
         """
 
         :param nuo_data: formatas "YYYY-MM-DD"
@@ -102,9 +105,9 @@ class TamoSession:
                     }, ...
                 ]
         """
-        return scraper.namu_darbai(self._session, self._parser, nuo_data, iki_data, dalyko_id)
+        return await scraper.namu_darbai(self._session, self._parser, nuo_data, iki_data, dalyko_id)
 
-    def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None):
+    async def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None):
         """
         :return: [
                     {
@@ -119,9 +122,9 @@ class TamoSession:
                     }, ...
                 ]
         """
-        return scraper.atsiskaitomieji_darbai(self._session, self._parser, metai, menuo)
+        return await scraper.atsiskaitomieji_darbai(self._session, self._parser, metai, menuo)
 
-    def pastabos(self):
+    async def pastabos(self):
         """
         :return: [
                     {
@@ -144,9 +147,9 @@ class TamoSession:
                     }, ...
                 ]
         """
-        return scraper.pastabos(self._session, self._parser)
+        return await scraper.pastabos(self._session, self._parser)
 
-    def pusmeciai(self, pusmecio_id: int = None):
+    async def pusmeciai(self, pusmecio_id: int = None):
         """
         :param pusmecio_id: 0 -> metinis; 1 -> pirmas pusmetis; 2-> antras pusmetis;
         :return: {
@@ -176,9 +179,9 @@ class TamoSession:
                     ]
                 }
         """
-        return scraper.pusmeciai(self._session, self._parser, pusmecio_id)
+        return await scraper.pusmeciai(self._session, self._parser, pusmecio_id)
 
-    def pranesimai(self, puslapis: int = 1, identification: str = None):
+    async def pranesimai(self, puslapis: int = 1, identification: str = None):
         """
         :param identification: str tokenas, kuri reiktu issaugoti jeigu norima
             naudotis pranesimai ar pranesimas antra karta
@@ -211,9 +214,9 @@ class TamoSession:
                     ]
                 }
         """
-        return scraper.pranesimai(self._session, puslapis, identification)
+        return await scraper.pranesimai(self._session, puslapis, identification)
 
-    def pranesimas(self, pranesimo_id: int, identification: str = None):
+    async def pranesimas(self, pranesimo_id: int, identification: str = None):
         """
         :param message_id: str gaunamas funkcijoje pranesimai()
         :param identification: str tokenas gaunamas funkcijoje pranesimai(), jeigu None bus gautas naujas
@@ -228,16 +231,17 @@ class TamoSession:
                     ]
                 }
         """
-        return scraper.pranesimas(self._session, pranesimo_id, identifikacija)
+        return await scraper.pranesimas(self._session, pranesimo_id, identifikacija)
 
-    def file_url(self, file_id: str):
+    async def file_url(self, file_id: str):
         """
         :param file_id: gaunamas funkcijoj pranesimas()
         :return: {
                     "url": str  # url parsisiusti file
                 }
         """
-        return scraper.file_url(self._session, file_id)
+        return await scraper.file_url(self._session, file_id)
 
-    def close(self):
-        self._session.close()
+    async def close(self):
+        await self._session.close()
+        del self._session

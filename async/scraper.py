@@ -15,25 +15,25 @@ REGEX = list(map(re.compile,
                  ]))
 
 
-def open_url(session, url, *args, **kwargs):
-    with session.get(url, *args, **kwargs) as r:
+async def open_url(session, url, *args, **kwargs):
+    async with session.get(url, *args, **kwargs) as r:
         try:
-            assert r.status_code == 200
+            assert r.status == 200
         except AssertionError:
-            print(f"Error inside open_url\nurl: {url}, status code: {r.status_code}")
+            print(f"Error inside open_url\nurl: {url}, status code: {r.status}")
             raise
-        html = r.text
+        html = await r.text()
     return html
 
 
-def post_req(session, url, *args, **kwargs):
-    with session.post(url, *args, **kwargs) as r:
+async def post_req(session, url, *args, **kwargs):
+    async with session.post(url, *args, **kwargs) as r:
         try:
-            assert r.status_code == 200
+            assert r.status == 200
         except AssertionError:
-            print(f"Error inside post_req\nurl: {url}, status code: {r.status_code}")
+            print(f"Error inside post_req\nurl: {url}, status code: {r.status}")
             raise
-        html = r.text
+        html = await r.text()
     return html
 
 
@@ -110,9 +110,9 @@ def savaites_diena2(raw):
     }[raw]
 
 
-def log_in(session, parser, username, password, check):
+async def log_in(session, parser, username, password, check):
     data = dict()
-    first_soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/Prisijungimas/Login"), parser)
+    first_soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/Prisijungimas/Login"), parser)
     for i in first_soup.find_all("input"):
         key = i.get("id")
         if key is None:
@@ -123,19 +123,19 @@ def log_in(session, parser, username, password, check):
     data["UserName"] = username
     data["Password"] = password
     if check:
-        soup = bs4.BeautifulSoup(post_req(session, "https://dienynas.tamo.lt/?clickMode=True", data=data), parser)
+        soup = bs4.BeautifulSoup(await post_req(session, "https://dienynas.tamo.lt/?clickMode=True", data=data), parser)
         try:
             assert "Prisijungimas" not in soup.find("title").text
         except AssertionError:
             raise AssertionError("Incorrect Login Info")
     else:
-        post_req(session, "https://dienynas.tamo.lt/?clickMode=True", data=data)
+        await post_req(session, "https://dienynas.tamo.lt/?clickMode=True", data=data)
 
 
-def tvarkarastis(session, parser, savaite):
+async def tvarkarastis(session, parser, savaite):
     url = ("https://dienynas.tamo.lt/TvarkarascioIrasas/MokinioTvarkarastis"
            if savaite is None else f"https://dienynas.tamo.lt/TvarkarascioIrasas/MokinioTvarkarastis?data={savaite}")
-    soup = bs4.BeautifulSoup(open_url(session, url), parser)
+    soup = bs4.BeautifulSoup(await open_url(session, url), parser)
     data = []
     for i in soup.find_all(class_="c_block padLess borderless")[1:]:
         temp = []
@@ -160,15 +160,15 @@ def tvarkarastis(session, parser, savaite):
     return data
 
 
-def dienynas(session, parser, metai, menuo):
+async def dienynas(session, parser, metai, menuo):
     if metai is not None and menuo is not None:
-        soup = bs4.BeautifulSoup(post_req(
+        soup = bs4.BeautifulSoup(await post_req(
             session, "https://dienynas.tamo.lt/Pamoka/MokinioDienynasTable", data={
                 "metai": str(metai),
                 "menuo": str(menuo)
             }), parser)
     else:
-        soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/Pamoka/MokinioDienynas"), parser)
+        soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/Pamoka/MokinioDienynas"), parser)
     stripped_page = soup.find_all(class_="dienynas")[1]
     day = savaites_diena(stripped_page.find("div").text.strip())
 
@@ -194,16 +194,16 @@ def dienynas(session, parser, metai, menuo):
     return data
 
 
-def pamokos(session, parser, metai, menesis):
+async def pamokos(session, parser, metai, menesis):
     if metai is None or menesis is None:
         # have to make an extra request if metai and menesis are not specified
-        soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/Pamoka/Sarasas"), parser)
-        soup = bs4.BeautifulSoup(post_req(session, "https://dienynas.tamo.lt" + soup.find_all("a")[-1]['href']), parser)
+        soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/Pamoka/Sarasas"), parser)
+        soup = bs4.BeautifulSoup(await post_req(session, "https://dienynas.tamo.lt" + soup.find_all("a")[-1]['href']), parser)
     else:
         soup = bs4.BeautifulSoup(
-            post_req(session,
-                     f"https://dienynas.tamo.lt/Pamoka/MokinioPamokuPartial?"
-                     f"moksloMetuMenesiaiId={(metai - 2010) * 12 + menesis - 7}&krautiVisaMenesi=True"), parser)
+            await post_req(session,
+                           f"https://dienynas.tamo.lt/Pamoka/MokinioPamokuPartial?"
+                           f"moksloMetuMenesiaiId={(metai - 2010) * 12 + menesis - 7}&krautiVisaMenesi=True"), parser)
     data = []
     for i in soup.find_all(class_="row", recursive=False):
         raw_menuo, raw_diena, raw_sav = i.find_all(class_="f-header")[1:4]
@@ -239,19 +239,19 @@ def pamokos(session, parser, metai, menesis):
     return data
 
 
-def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
+async def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
     """
     sitas dependina style=xxx search bet turbut tamo nieko nekeis
     """
     if nuo_data is None or iki_data is None:
-        soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/Darbai/NamuDarbai"), parser)
+        soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/Darbai/NamuDarbai"), parser)
     else:
-        soup = bs4.BeautifulSoup(post_req(session, "https://dienynas.tamo.lt/Darbai/NamuDarbai",
-                                          data={
-                                              "DateFilterMode": "0",  # idk ka sitas daro
-                                              "DataNuo": nuo_data,
-                                              "DataIki": iki_data,
-                                              "DalykoId": str(dalyko_id)}), parser)
+        soup = bs4.BeautifulSoup(await post_req(session, "https://dienynas.tamo.lt/Darbai/NamuDarbai",
+                                                data={
+                                                    "DateFilterMode": "0",  # idk ka sitas daro
+                                                    "DataNuo": nuo_data,
+                                                    "DataIki": iki_data,
+                                                    "DalykoId": str(dalyko_id)}), parser)
     data = []
     for i in soup.find_all(class_="row"):
         style = i.get("style")
@@ -297,14 +297,14 @@ def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
     return data
 
 
-def atsiskaitomieji_darbai(session, parser, metai, menesis):
+async def atsiskaitomieji_darbai(session, parser, metai, menesis):
     if metai is not None and menesis is not None:
         soup = bs4.BeautifulSoup(
-            open_url(session,
-                     f"https://dienynas.tamo.lt/Darbai/Atsiskaitymai"
-                     f"?MoksloMetuMenesioId={(metai - 2010) * 12 + menesis - 7}"), parser)
+            await open_url(session,
+                           f"https://dienynas.tamo.lt/Darbai/Atsiskaitymai"
+                           f"?MoksloMetuMenesioId={(metai - 2010) * 12 + menesis - 7}"), parser)
     else:
-        soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/Darbai/Atsiskaitymai"), parser)
+        soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/Darbai/Atsiskaitymai"), parser)
     data = []
     for i in soup.find_all("tr")[1:]:
         groups = REGEX[5].match(i.find("td").text.replace("\n", "").strip()).groups()
@@ -321,8 +321,8 @@ def atsiskaitomieji_darbai(session, parser, metai, menesis):
     return data
 
 
-def pastabos(session, parser):
-    soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/Pastabos/Mokiniams"), parser)
+async def pastabos(session, parser):
+    soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/Pastabos/Mokiniams"), parser)
     data = []
     names = ["tipas", "tekstas", "dalykas", "mokytojas"]
     for i in soup.find(class_="records").find_all(class_="row"):
@@ -354,8 +354,8 @@ def pastabos(session, parser):
     return data
 
 
-def pusmeciai0(session, parser):
-    soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/0"),
+async def pusmeciai0(session, parser):
+    soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/0"),
                              parser)
     data = {}
     rows = soup.find(class_="c_table_container").find("table").find_all("tr")[2:]
@@ -398,9 +398,10 @@ def pusmeciai0(session, parser):
     return data
 
 
-def pusmeciai(session, parser, pusmecio_id):
+async def pusmeciai(session, parser, pusmecio_id):
     if pusmecio_id is None:
-        soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai"), parser)
+        soup = bs4.BeautifulSoup(
+            await open_url(session, "https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai"), parser)
     else:
         if pusmecio_id == 1:
             pusmecio_id = 68453
@@ -408,8 +409,9 @@ def pusmeciai(session, parser, pusmecio_id):
             pusmecio_id = 68454
         elif pusmecio_id == 0:
             return pusmeciai0(session, parser)
-        soup = bs4.BeautifulSoup(open_url(session, f"https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/{pusmecio_id}"),
-                                 parser)
+        soup = bs4.BeautifulSoup(
+            await open_url(session, f"https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/{pusmecio_id}"),
+            parser)
     data = dict()
     rows = soup.find(class_="c_table_container").find("table").find_all("tr")[1:]
     _, pazymiu, vidurkiu, isvestu = rows[-1].find_all("td")
@@ -460,28 +462,28 @@ def pusmeciai(session, parser, pusmecio_id):
     return data
 
 
-def pranesimai(session, page, identification):
+async def pranesimai(session, page, identification):
     # 2 more requests if identification is None
     if identification is None:
-        open_url(session, "https://dienynas.tamo.lt/GoTo/Bendrauk")
-        with session.get("https://api.tamo.lt/messaging/core/roles",
-                         headers={"Accept": "application/json"}) as r:
+        await open_url(session, "https://dienynas.tamo.lt/GoTo/Bendrauk")
+        async with session.get("https://api.tamo.lt/messaging/core/roles",
+                               headers={"Accept": "application/json"}) as r:
             try:
-                assert r.status_code == 200
+                assert r.status == 200
             except AssertionError:
                 print("Error inside get_messages")
                 raise
             else:
-                identification = r.json()["items"][0]["id"]
-    with session.get(f"https://api.tamo.lt/messaging/messages/received?orderDescending=true&searchTerm=&page={page}",
-                     headers={"Accept": "application/json", "x-selected-role": identification}) as r:
+                identification = (await r.json())["items"][0]["id"]
+    async with session.get(f"https://api.tamo.lt/messaging/messages/received?orderDescending=true&searchTerm=&page={page}",
+                           headers={"Accept": "application/json", "x-selected-role": identification}) as r:
         try:
-            assert r.status_code == 200
+            assert r.status == 200
         except AssertionError:
             print("Error inside get_messages")
             raise
         else:
-            raw_data = r.json()
+            raw_data = await r.json()
     data = []
     for i in raw_data["items"]:
         first_groups = REGEX[8].match(i["date"]).groups()
@@ -517,27 +519,27 @@ def pranesimai(session, page, identification):
     return {"id": identification, "pranesimai": data}
 
 
-def pranesimas(session, message_id, identification):
+async def pranesimas(session, message_id, identification):
     if identification is None:
-        open_url(session, "https://dienynas.tamo.lt/GoTo/Bendrauk")
-        with session.get("https://api.tamo.lt/messaging/core/roles",
-                         headers={"Accept": "application/json"}) as r:
+        await open_url(session, "https://dienynas.tamo.lt/GoTo/Bendrauk")
+        async with session.get("https://api.tamo.lt/messaging/core/roles",
+                               headers={"Accept": "application/json"}) as r:
             try:
-                assert r.status_code == 200
+                assert r.status == 200
             except AssertionError:
                 print("Error inside get_message")
                 raise
             else:
-                identification = r.json()["items"][0]["id"]
-    with session.get(f"https://api.tamo.lt/messaging/messages/received/{message_id}",
-                     headers={"Accept": "application/json", "x-selected-role": identification}) as r:
+                identification = (await r.json())["items"][0]["id"]
+    async with session.get(f"https://api.tamo.lt/messaging/messages/received/{message_id}",
+                           headers={"Accept": "application/json", "x-selected-role": identification}) as r:
         try:
-            assert r.status_code == 200
+            assert r.status == 200
         except AssertionError:
             print("Error inside get_message")
             raise
         else:
-            raw_data = r.json()
+            raw_data = await r.json()
     try:
         data = {
             "html tekstas": raw_data["item"]["body"],
@@ -555,17 +557,17 @@ def pranesimas(session, message_id, identification):
     return data
 
 
-def file_url(session, file_id):
-    with session.post("https://api.tamo.lt/files/filedownloadurl",
-                      headers={"Content-Type": "application/json"},
-                      json={"fileSid": file_id}) as r:
+async def file_url(session, file_id):
+    async with session.post("https://api.tamo.lt/files/filedownloadurl",
+                            headers={"Content-Type": "application/json"},
+                            json={"fileSid": file_id}) as r:
         try:
-            assert r.status_code == 200
+            assert r.status == 200
         except AssertionError:
-            if r.status_code == 404:
+            if r.status == 404:
                 raise FileNotFoundError
             else:
                 print("Error inside get_file_link")
                 raise
         else:
-            return r.json()
+            return await r.json()
