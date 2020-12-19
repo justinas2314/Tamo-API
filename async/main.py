@@ -244,4 +244,3 @@ class TamoSession:
 
     async def close(self):
         await self._session.close()
-        del self._session
