@@ -9,7 +9,7 @@ Tamo priverčia po tam tikro laiko tarpo atsijungti, šis API to neatpažins, to
 ## Kaip naudotis?
 Susiinstaliuoti [beautifulsoup4](https://pypi.org/project/beautifulsoup4/) ir, priklausomai nuo pasirinktos versijos, arba [requests](https://pypi.org/project/requests/), arba [aiohttp](https://pypi.org/project/aiohttp/).  
 `main.py` turėtu būti importuojamas norint naudoti šį API python script.  
-`server.py` turėtu būti naudojamas norint turėti serveri (turbut `http://127.0.0.1:5000/`), kuriuo galima naudotis ir su kitomis programavimo kalbomis.  
+`server.py` turėtu būti naudojamas norint turėti serveri (turbut `http://127.0.0.1:5000/`), kuriuo galima naudotis ir su kitomis programavimo kalbomis. Reikia turėti [flask](https://pypi.org/project/Flask/).  
 `scraper.py` neturėtu būti importuojamas, tai duobė į kurią aš sumečiau visą script logiką. Vietoj `scraper.py` reiktų naudoti `main.py`, nes `main.py` yra wrapper aplink `scraper.py`.  
 `async` folder yra `main.py` ir `scraper.py` asinchroninės versijos, kurios veikia beveik visiškai taip pat.   
 Kaip naudotis `main.py` galima sužinoti atsidarius `main.py`, o `server.py` atsidarius serverio link (turbut `http://127.0.0.1:5000/`). `main.py`, kaip ir `server.py`, grąžina dict ir list populiuotus primityviais tipais, visos funkcijos (jų priimami ir grąžinami parametrai) yra tokios pačios.  
