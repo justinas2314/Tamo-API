@@ -15,6 +15,16 @@ class TamoSession:
         await scraper.log_in(tamo_session._session, parser, username, password, check_incorrect_login)
         return tamo_session
 
+    def __init__(self, *args, **kwargs):
+        self.__args = args
+        self.__kwargs = kwargs
+
+    async def __aenter__(self):
+        return await self.create(*self.__args, **self.__kwargs)
+
+    async def __aexit__(self, *_):
+        await self._session.close()
+
     async def tvarkarastis(self, savaite: str = None):
         """
         :param savaite: savaites pradzia formatu "YYYY-MM-DD"
