@@ -231,7 +231,7 @@ class TamoSession:
                     ]
                 }
         """
-        return await scraper.pranesimas(self._session, pranesimo_id, identifikacija)
+        return await scraper.pranesimas(self._session, pranesimo_id, identification)
 
     async def file_url(self, file_id: str):
         """
