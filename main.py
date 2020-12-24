@@ -12,6 +12,15 @@ class TamoSession:
         self._session = requests.Session()
         scraper.log_in(self._session, parser, username, password, check_incorrect_login)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_):
+        self._session.close()
+
+    def close(self):
+        self._session.close()
+
     def tvarkarastis(self, savaite: str = None):
         """
         :param savaite: savaites pradzia formatu "YYYY-MM-DD"
@@ -238,6 +247,3 @@ class TamoSession:
                 }
         """
         return scraper.file_url(self._session, file_id)
-
-    def close(self):
-        self._session.close()
