@@ -20,7 +20,6 @@ async def open_url(session, url, *args, **kwargs):
         try:
             assert r.status == 200
         except AssertionError:
-            print(f"Error inside open_url\nurl: {url}, status code: {r.status}")
             raise
         html = await r.text()
     return html
@@ -31,7 +30,6 @@ async def post_req(session, url, *args, **kwargs):
         try:
             assert r.status == 200
         except AssertionError:
-            print(f"Error inside post_req\nurl: {url}, status code: {r.status}")
             raise
         html = await r.text()
     return html
@@ -258,7 +256,7 @@ async def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
         if style == "margin:25px 0px;":
             atlikimo_data = i.find("span").text.replace("\n", "").strip()
         elif style == "margin-top:10px;margin-bottom:10px;":
-            temp = dict()
+            temp = {"failai": []}
             for b in i.find_all("b"):
                 t = b.text.strip()
                 if t == "Pamokos data:":
@@ -279,6 +277,12 @@ async def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
                         "h": int(groups[3]),
                         "min": int(groups[4])
                     }
+                elif t == "Failai:":
+                    for a in b.parent.find_all("a"):
+                        temp["failai"].append({
+                            "pavadinimas": a.text.strip(),
+                            "url": f"https://dienynas.tamo.lt{a.get('href')}"
+                        })
         elif style is None:
             try:
                 if "namu darbas" not in temp:
@@ -471,7 +475,6 @@ async def pranesimai(session, page, identification):
             try:
                 assert r.status == 200
             except AssertionError:
-                print("Error inside get_messages")
                 raise
             else:
                 identification = (await r.json())["items"][0]["id"]
@@ -480,7 +483,6 @@ async def pranesimai(session, page, identification):
         try:
             assert r.status == 200
         except AssertionError:
-            print("Error inside get_messages")
             raise
         else:
             raw_data = await r.json()
@@ -527,7 +529,6 @@ async def pranesimas(session, message_id, identification):
             try:
                 assert r.status == 200
             except AssertionError:
-                print("Error inside get_message")
                 raise
             else:
                 identification = (await r.json())["items"][0]["id"]
@@ -536,7 +537,6 @@ async def pranesimas(session, message_id, identification):
         try:
             assert r.status == 200
         except AssertionError:
-            print("Error inside get_message")
             raise
         else:
             raw_data = await r.json()
@@ -567,7 +567,12 @@ async def file_url(session, file_id):
             if r.status == 404:
                 raise FileNotFoundError
             else:
-                print("Error inside get_file_link")
                 raise
         else:
             return await r.json()
+
+
+async def proxy(session, method="get", *args, **kwargs):
+    async with getattr(session, method)(*args, **kwargs) as r:
+        return await r.content.read()
+
