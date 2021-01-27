@@ -258,7 +258,7 @@ def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
         if style == "margin:25px 0px;":
             atlikimo_data = i.find("span").text.replace("\n", "").strip()
         elif style == "margin-top:10px;margin-bottom:10px;":
-            temp = dict()
+            temp = {"failai": []}
             for b in i.find_all("b"):
                 t = b.text.strip()
                 if t == "Pamokos data:":
@@ -279,6 +279,13 @@ def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
                         "h": int(groups[3]),
                         "min": int(groups[4])
                     }
+                elif t == "Failai:":
+                    for a in b.parent.find_all("a"):
+                        temp["failai"].append({
+                            "pavadinimas": a.text.strip(),
+                            "url": f"https://dienynas.tamo.lt{a.get('href')}"
+                        })
+
         elif style is None:
             try:
                 if "namu darbas" not in temp:
@@ -569,3 +576,8 @@ def file_url(session, file_id):
                 raise
         else:
             return r.json()
+
+
+def proxy(session, method="get", *args, **kwargs):
+    with getattr(session, method)(*args, **kwargs) as r:
+        return r.content
