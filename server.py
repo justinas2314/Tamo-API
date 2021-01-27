@@ -73,6 +73,10 @@ DOCS = {
             "iki data": "str or null yyyy-mm-dd",
             "dalyko id": "int or null 0 is the default and does not filter anything"
         }, "response fields": {
+            "failai": [{
+                "pavadinimas": "str",
+                "url": "str self.session.get() to open it"
+            }],
             "pamokos data": {
                 "y": "int year",
                 "m": "int month",
@@ -212,15 +216,22 @@ DOCS = {
         "response fields": {
             "url": "str"
         }
+    },
+    "proxy": {
+        "request fields": {
+            "args": "[Any] args to pass to session.get/session.post/...",
+            "kwargs": "{key: value} to pass to session.get/session.post/..."
+        },
+        "response fields": {}
     }
 }
+
 
 def get_user(key):
     try:
         return ONLINE_ACCOUNTS[key]["session"]
     except KeyError:
         return flask.abort(404, "User not found")
-
 
 
 def clean_up(ctime):
@@ -262,6 +273,7 @@ def docs():
       <li>/pranesimai</li>
       <li>/pranesimas</li>
       <li>/file_url</li>
+      <li>/proxy</li>
     </ul>
 </body>
 </html>
@@ -465,6 +477,24 @@ def file_url():
         return flask.jsonify(user.file_url(file_id))
     except FileNotFoundError:
         return flask.abort(404, "Incorrect 'file id'")
+
+
+@app.route("/proxy", methods=["get", "post"])
+def proxy():
+    if flask.request.method == "GET":
+        return DOCS["proxy"]
+
+    data = flask.request.cookies
+    user = get_user((data.get("username"), data.get("password")))
+    json = flask.request.get_json()
+    if json is None:
+        return flask.abort(400, "No json payload")
+    args = json.get("args", [])
+    kwargs = json.get("kwargs", dict())
+    try:
+        return user.proxy(*args, **kwargs)
+    except FileNotFoundError:
+        return flask.abort(400, "Something went wrong possibly with the json payload")
 
 
 app.run()
