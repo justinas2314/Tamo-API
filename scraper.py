@@ -20,7 +20,6 @@ def open_url(session, url, *args, **kwargs):
         try:
             assert r.status_code == 200
         except AssertionError:
-            print(f"Error inside open_url\nurl: {url}, status code: {r.status_code}")
             raise
         html = r.text
     return html
@@ -31,7 +30,6 @@ def post_req(session, url, *args, **kwargs):
         try:
             assert r.status_code == 200
         except AssertionError:
-            print(f"Error inside post_req\nurl: {url}, status code: {r.status_code}")
             raise
         html = r.text
     return html
@@ -476,7 +474,6 @@ def pranesimai(session, page, identification):
             try:
                 assert r.status_code == 200
             except AssertionError:
-                print("Error inside get_messages")
                 raise
             else:
                 identification = r.json()["items"][0]["id"]
@@ -485,7 +482,6 @@ def pranesimai(session, page, identification):
         try:
             assert r.status_code == 200
         except AssertionError:
-            print("Error inside get_messages")
             raise
         else:
             raw_data = r.json()
@@ -532,7 +528,6 @@ def pranesimas(session, message_id, identification):
             try:
                 assert r.status_code == 200
             except AssertionError:
-                print("Error inside get_message")
                 raise
             else:
                 identification = r.json()["items"][0]["id"]
@@ -541,7 +536,6 @@ def pranesimas(session, message_id, identification):
         try:
             assert r.status_code == 200
         except AssertionError:
-            print("Error inside get_message")
             raise
         else:
             raw_data = r.json()
@@ -572,7 +566,6 @@ def file_url(session, file_id):
             if r.status_code == 404:
                 raise FileNotFoundError
             else:
-                print("Error inside get_file_link")
                 raise
         else:
             return r.json()
