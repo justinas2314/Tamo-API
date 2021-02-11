@@ -50,19 +50,32 @@ class TamoSession:
 
     async def dienynas(self, metai: int = None, menuo: int = None):
         """
-        :return: [
-                    {
-                        "dalykas": str,
-                        "pazymys": str,
-                        "tipas": str,
-                        "taisymo data": {
-                            "m": int,
-                            "d": int
-                        },
-                        "d": int,
-                        "w": int
-                    }, ...
-                ]
+        :return:
+                {
+                    "ivertinimai": [
+                        {
+                            "dalykas": str,
+                            "pazymys": str,
+                            "tipas": str,
+                            "taisymo data": {
+                                "m": int,
+                                "d": int
+                            },
+                            "d": int,
+                            "w": int
+                        }, ...
+                    ],
+                    "lankomumas": [
+                        {
+                            "dalykas": str,
+                            "tipas": str,
+                            "data": {
+                                "d": int,
+                                "w": int
+                            }
+                        }
+                    ]
+                }
         """
         return await scraper.dienynas(self.session, self._parser, metai, menuo)
 

@@ -37,15 +37,26 @@ DOCS = {
             "metai": "int or null",
             "menuo": "int or null",
         }, "response fields": {
-            "dalykas": "str Matematika/Dorinis ugdymas (etika)/...",
-            "ivertinimas": "str 10/9/įsk./...",
-            "tipas": "str Klasės darbas/Kontrolinis darbas/...",
-            "taisymo data": {
-                "m": "int month",
-                "d": "int day"
-            }, "data": {
-                "d": "int day",
-                "w": "int weekday"
+            "ivertinimai": {
+                "dalykas": "str Matematika/Dorinis ugdymas (etika)/...",
+                "ivertinimas": "str 10/9/įsk./...",
+                "tipas": "str Klasės darbas/Kontrolinis darbas/...",
+                "taisymo data": {
+                    "m": "int month",
+                    "d": "int day"
+                }, "data": {
+                    "d": "int day",
+                    "w": "int weekday"
+                }
+            },
+            "lankomumas": {
+                "dalykas": "str Matematika/Dorinis ugdymas (etika)/...",
+                "tipas": "str n/p",
+                "data": {
+                    "d": "int day",
+                    "w": "int weekday"
+                }
+
             }
         }
     },

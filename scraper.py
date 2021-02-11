@@ -170,26 +170,43 @@ def dienynas(session, parser, metai, menuo):
     stripped_page = soup.find_all(class_="dienynas")[1]
     day = savaites_diena(stripped_page.find("div").text.strip())
 
-    data = []
+    lankomumai = []
+    ivertinimai = []
     for i in stripped_page.find_all("tr")[1:]:
         dalykas = i.find("td").text.replace("\n", "").strip()
         for index, j in enumerate(i.find_all("td")[1:]):
             try:
                 groups = REGEX[1].match(j["data-original-title"]).groups()
-                data.append({"dalykas": dalykas,
-                             "ivertinimas": j.text.strip(),
-                             "tipas": groups[0],
-                             "taisymo data": {
-                                 "m": menuo1(groups[1]),
-                                 "d": int(groups[2])
-                             },
-                             "data": {
-                                "d": index + 1,
-                                "w": (index + day) % 7 if (index + day) % 7 else 7
-                             }})
+                ivertinimas = j.text.strip()
+                if "\n" in ivertinimas:
+                    ivertinimas, lankomumas = ivertinimas.split("\n")
+                    lankomumai.append({"dalykas": dalykas,
+                                       "tipas": lankomumas,
+                                       "data": {
+                                           "d": index + 1,
+                                           "w": (index + day) % 7 if (index + day) % 7 else 7
+                                       }})
+                ivertinimai.append({"dalykas": dalykas,
+                                    "ivertinimas": ivertinimas,
+                                    "tipas": groups[0],
+                                    "taisymo data": {
+                                        "m": menuo1(groups[1]),
+                                        "d": int(groups[2])
+                                    },
+                                    "data": {
+                                        "d": index + 1,
+                                        "w": (index + day) % 7 if (index + day) % 7 else 7
+                                    }})
+            except TypeError:
+                lankomumai.append({"dalykas": dalykas,
+                                   "tipas": j.text.strip(),
+                                   "data": {
+                                       "d": index + 1,
+                                       "w": (index + day) % 7 if (index + day) % 7 else 7
+                                   }})
             except KeyError:
                 pass
-    return data
+    return {"ivertinimai": ivertinimai, "lankomumas": lankomumai}
 
 
 def pamokos(session, parser, metai, menesis):
