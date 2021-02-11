@@ -197,7 +197,7 @@ def dienynas(session, parser, metai, menuo):
                                         "d": index + 1,
                                         "w": (index + day) % 7 if (index + day) % 7 else 7
                                     }})
-            except AttributeError:
+            except (AttributeError, TypeError):
                 lankomumai.append({"dalykas": dalykas,
                                    "tipas": j.text.strip(),
                                    "data": {
