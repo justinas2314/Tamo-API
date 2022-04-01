@@ -291,7 +291,6 @@ def docs():
 """
 
 
-
 @app.route('/log_in', methods=["post", "get"])
 def log_in():
     ctime = time.time()
@@ -322,14 +321,6 @@ def log_in():
                 "session": TamoSession(username, password)
             }
         except AssertionError:
-            try:
-                FAILED_LOGINS[ip]["last timestamp"] = ctime
-                FAILED_LOGINS[ip]["counter"] += 1
-            except KeyError:
-                FAILED_LOGINS[ip] = {
-                    "last timestamp": ctime,
-                    "counter": 1
-                }
             return flask.abort(401, "Incorrect Username/Password")
         resp = flask.make_response()
         resp.set_cookie("username", username)
@@ -432,7 +423,6 @@ def pusmeciai():
     else:
         pusmecio_id = None
     return flask.jsonify(user.pusmeciai(pusmecio_id))
-
 
 
 @app.route("/pranesimai", methods=["post", "get"])
