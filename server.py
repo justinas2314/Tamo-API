@@ -1,7 +1,7 @@
 import time
 import flask
 
-from main import TamoSession
+from TamoAPI import TamoSession
 
 
 app = flask.Flask(__name__)
