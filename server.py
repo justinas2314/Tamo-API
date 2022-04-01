@@ -297,7 +297,7 @@ def log_in():
     clean_up(ctime)
     if flask.request.method == "GET":
         return DOCS["log_in"]
-    data = flask.request.get_json()
+    data = flask.request.get_json(silent=True)
     if data is None:
         return flask.abort(400, "No json payload")
     username = data.get("username")
@@ -335,7 +335,7 @@ def tvarkarastis():
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
     try:
-        savaite = flask.request.get_json().get("savaite")
+        savaite = flask.request.get_json(silent=True).get("savaite")
     except AttributeError:
         savaite = None
     return flask.jsonify(user.tvarkarastis(savaite))
@@ -347,7 +347,7 @@ def dienynas():
         return DOCS["dienynas"]
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
-    json = flask.request.get_json()
+    json = flask.request.get_json(silent=True)
     if json is not None:
         metai = json.get("metai")
         menuo = json.get("menuo")
@@ -362,7 +362,7 @@ def pamokos():
         return DOCS["pamokos"]
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
-    json = flask.request.get_json()
+    json = flask.request.get_json(silent=True)
     if json is not None:
         metai = json.get("metai")
         menuo = json.get("menuo")
@@ -377,7 +377,7 @@ def namu_darbai():
         return DOCS["namu_darbai"]
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
-    json = flask.request.get_json()
+    json = flask.request.get_json(silent=True)
     if json is not None:
         nuo_data = json.get("nuo data")
         iki_data = json.get("iki data")
@@ -393,7 +393,7 @@ def atsiskaitomieji_darbai():
         return DOCS["atsiskaitomieji_darbai"]
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
-    json = flask.request.get_json()
+    json = flask.request.get_json(silent=True)
     if json is not None:
         metai = json.get("metai")
         menuo = json.get("menuo")
@@ -417,7 +417,7 @@ def pusmeciai():
         return DOCS["pusmeciai"]
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
-    json = flask.request.get_json()
+    json = flask.request.get_json(silent=True)
     if json is not None:
         pusmecio_id = json.get("pusmecio id")
     else:
@@ -431,7 +431,7 @@ def pranesimai():
         return DOCS["pranesimai"]
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
-    json = flask.request.get_json()
+    json = flask.request.get_json(silent=True)
     if json is not None:
         puslapis = json.get("puslapis", 1)
         token = json.get("id")
@@ -447,7 +447,7 @@ def pranesimas():
         return DOCS["pranesimas"]
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
-    json = flask.request.get_json()
+    json = flask.request.get_json(silent=True)
     if json is None:
         return flask.abort(400, "No json payload")
     try:
@@ -467,7 +467,7 @@ def file_url():
         return DOCS["file_url"]
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
-    json = flask.request.get_json()
+    json = flask.request.get_json(silent=True)
     if json is None:
         return flask.abort(400, "No json payload")
     try:
@@ -487,7 +487,7 @@ def proxy():
 
     data = flask.request.cookies
     user = get_user((data.get("username"), data.get("password")))
-    json = flask.request.get_json()
+    json = flask.request.get_json(silent=True)
     if json is None:
         return flask.abort(400, "No json payload")
     args = json.get("args", [])
