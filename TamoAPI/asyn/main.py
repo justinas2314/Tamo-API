@@ -1,5 +1,6 @@
 import aiohttp
-import scraper
+
+from TamoAPI.asyn import scraper
 
 
 class TamoSession:

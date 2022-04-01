@@ -1,5 +1,6 @@
 import requests
-import scraper
+
+from TamoAPI import scraper
 
 
 class TamoSession:
