@@ -386,7 +386,7 @@ def namu_darbai():
         datos_metodas = json.get("datos metodas", 0)
     else:
         nuo_data = iki_data = dalyko_id = None
-    return flask.jsonify(user.namu_darbai(nuo_data, iki_data, dalyko_id, metodas))
+    return flask.jsonify(user.namu_darbai(nuo_data, iki_data, dalyko_id, datos_metodas))
 
 
 @app.route("/atsiskaitomieji_darbai", methods=["post", "get"])
