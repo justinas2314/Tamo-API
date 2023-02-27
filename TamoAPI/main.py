@@ -96,7 +96,7 @@ class TamoSession:
         """
         return scraper.pamokos(self.session, self._parser, metai, menuo)
 
-    def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0):
+    def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0, metodas: int = 0):
         """
 
         :param nuo_data: formatas "YYYY-MM-DD"
@@ -130,7 +130,7 @@ class TamoSession:
                     }, ...
                 ]
         """
-        return scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id)
+        return scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id, metodas)
 
     def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None):
         """
