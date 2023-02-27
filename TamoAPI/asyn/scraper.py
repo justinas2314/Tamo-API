@@ -254,7 +254,7 @@ async def pamokos(session, parser, metai, menesis):
     return data
 
 
-async def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
+async def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id, metodas = 0):
     """
     sitas dependina style=xxx search bet turbut tamo nieko nekeis
     """
@@ -263,7 +263,7 @@ async def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
     else:
         soup = bs4.BeautifulSoup(await post_req(session, "https://dienynas.tamo.lt/Darbai/NamuDarbai",
                                                 data={
-                                                    "DateFilterMode": "0",  # idk ka sitas daro
+                                                    "DateFilterMode": metodas,  # idk ka sitas daro
                                                     "DataNuo": nuo_data,
                                                     "DataIki": iki_data,
                                                     "DalykoId": str(dalyko_id)}), parser)
