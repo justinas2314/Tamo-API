@@ -82,7 +82,8 @@ DOCS = {
         "request fields": {
             "nuo data": "str or null yyyy-mm-dd",
             "iki data": "str or null yyyy-mm-dd",
-            "dalyko id": "int or null 0 is the default and does not filter anything"
+            "dalyko id": "int or null 0 is the default and does not filter anything",
+            "datos metodas": "int 0 or 1 (0 sorts by due date, and is the default. 1 sorts by lesson date)"
         }, "response fields": {
             "failai": [{
                 "pavadinimas": "str",
@@ -382,9 +383,10 @@ def namu_darbai():
         nuo_data = json.get("nuo data")
         iki_data = json.get("iki data")
         dalyko_id = json.get("dalyko id", 0)
+        datos_metodas = json.get("datos metodas", 0)
     else:
         nuo_data = iki_data = dalyko_id = None
-    return flask.jsonify(user.namu_darbai(nuo_data, iki_data, dalyko_id))
+    return flask.jsonify(user.namu_darbai(nuo_data, iki_data, dalyko_id, metodas))
 
 
 @app.route("/atsiskaitomieji_darbai", methods=["post", "get"])
