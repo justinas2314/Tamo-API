@@ -96,12 +96,14 @@ class TamoSession:
         """
         return scraper.pamokos(self.session, self._parser, metai, menuo)
 
-    def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0):
+    def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0, metodas: int = 0):
         """
 
         :param nuo_data: formatas "YYYY-MM-DD"
         :param iki_data: formatas "YYYY-MM-DD"
         :param dalyko_id: 0 kad nefiltruotu, kiti skaiciai filterins, ne tas skaicius yra undefined behaviour
+        :param metodas: 0 ieskos pagal atlikimo data, 1 ieskos pagal pamokos data, nuo sito skirsis
+            kurios datos savaites data bus zinoma, o kuri bus null
         :return: [
                     {
                         "failai": [{
@@ -111,7 +113,8 @@ class TamoSession:
                         "pamokos data": {
                             "y": int,
                             "m": int,
-                            "d": int
+                            "d": int,
+                            "w": int or None
                         },
                         "ivede": {
                             "y": int,
@@ -125,12 +128,12 @@ class TamoSession:
                             "y": int,
                             "m": int,
                             "d": int,
-                            "w": int
+                            "w": int or None
                         }
                     }, ...
                 ]
         """
-        return scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id)
+        return scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id, metodas)
 
     def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None):
         """
@@ -208,6 +211,7 @@ class TamoSession:
 
     def pranesimai(self, puslapis: int = 1, identification: str = None):
         """
+        :param puslapis: int
         :param identification: str tokenas, kuri reiktu issaugoti jeigu norima
             naudotis pranesimai ar pranesimas antra karta
         :return: {
