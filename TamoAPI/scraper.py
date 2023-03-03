@@ -254,7 +254,7 @@ def pamokos(session, parser, metai, menesis):
     return data
 
 
-def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
+def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id, metodas):
     """
     sitas dependina style=xxx search bet turbut tamo nieko nekeis
     """
@@ -263,7 +263,7 @@ def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
     else:
         soup = bs4.BeautifulSoup(post_req(session, "https://dienynas.tamo.lt/Darbai/NamuDarbai",
                                           data={
-                                              "DateFilterMode": "0",  # idk ka sitas daro
+                                              "DateFilterMode": metodas,
                                               "DataNuo": nuo_data,
                                               "DataIki": iki_data,
                                               "DalykoId": str(dalyko_id)}), parser)
@@ -271,7 +271,7 @@ def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
     for i in soup.find_all(class_="row"):
         style = i.get("style")
         if style == "margin:25px 0px;":
-            atlikimo_data = i.find("span").text.replace("\n", "").strip()
+            kazkokia_data = i.find("span").text.replace("\n", "").strip()
         elif style == "margin-top:10px;margin-bottom:10px;":
             temp = {"failai": []}
             for b in i.find_all("b"):
@@ -281,7 +281,8 @@ def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
                     temp["pamokos data"] = {
                         "y": int(groups[0]),
                         "m": int(groups[1]),
-                        "d": int(groups[2])
+                        "d": int(groups[2]),
+                        "w": None
                     }
                 elif t == "Mokytojas(-a)":
                     temp["mokytojas"] = b.next.next.strip()
@@ -300,6 +301,14 @@ def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
                             "pavadinimas": a.text.strip(),
                             "url": f"https://dienynas.tamo.lt{a.get('href')}"
                         })
+                elif t == "Atlikimo data:":
+                    groups = REGEX[2].match(b.next.next.strip()).groups()
+                    temp["atlikimo data"] = {
+                        "y": int(groups[0]),
+                        "m": int(groups[1]),
+                        "d": int(groups[2]),
+                        "w": None
+                    }
 
         elif style is None:
             try:
@@ -307,13 +316,21 @@ def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id):
                     temp["namu darbas"] = i.text.strip()
             except UnboundLocalError:  # jei date range nespecified ir scrapina default page
                 continue
-            groups = REGEX[4].match(atlikimo_data).groups()
-            temp["atlikimo data"] = {
-                "y": int(groups[0]),
-                "m": int(groups[1]),
-                "d": int(groups[2]),
-                "w": savaites_diena2(groups[3])
-            }
+            groups = REGEX[4].match(kazkokia_data).groups()
+            if metodas == 0:
+                temp["atlikimo data"] = {
+                    "y": int(groups[0]),
+                    "m": int(groups[1]),
+                    "d": int(groups[2]),
+                    "w": savaites_diena2(groups[3])
+                }
+            else:
+                temp["pamokos data"] = {
+                    "y": int(groups[0]),
+                    "m": int(groups[1]),
+                    "d": int(groups[2]),
+                    "w": savaites_diena2(groups[3])
+                }
             data.append(temp)
             del temp
     return data
@@ -422,7 +439,8 @@ def pusmeciai0(session, parser):
 
 def pusmeciai(session, parser, pusmecio_id):
     if pusmecio_id is None:
-        soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai"), parser)
+        soup = bs4.BeautifulSoup(
+            open_url(session, "https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai"), parser)
     else:
         if pusmecio_id == 1:
             pusmecio_id = 68453
@@ -430,8 +448,8 @@ def pusmeciai(session, parser, pusmecio_id):
             pusmecio_id = 68454
         elif pusmecio_id == 0:
             return pusmeciai0(session, parser)
-        soup = bs4.BeautifulSoup(open_url(session, f"https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/{pusmecio_id}"),
-                                 parser)
+        soup = bs4.BeautifulSoup(
+            open_url(session, f"https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/{pusmecio_id}"), parser)
     data = dict()
     rows = soup.find(class_="c_table_container").find("table").find_all("tr")[1:]
     _, pazymiu, vidurkiu, isvestu = rows[-1].find_all("td")

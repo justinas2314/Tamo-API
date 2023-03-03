@@ -9,7 +9,8 @@ class TamoSession:
     kažkas nesigauna galima bandyti per naują prisijungti su nauju TamoSession()
     """
     @classmethod
-    async def create(cls, username: str, password: str, *, parser: str = "html.parser", check_incorrect_login: bool = True):
+    async def create(cls, username: str, password: str, *, parser: str = "html.parser",
+                     check_incorrect_login: bool = True):
         tamo_session = TamoSession()
         tamo_session._parser = parser
         tamo_session.session = aiohttp.ClientSession()
@@ -100,18 +101,21 @@ class TamoSession:
         """
         return await scraper.pamokos(self.session, self._parser, metai, menuo)
 
-    async def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0):
+    async def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0, metodas: int = 0):
         """
 
         :param nuo_data: formatas "YYYY-MM-DD"
         :param iki_data: formatas "YYYY-MM-DD"
         :param dalyko_id: 0 kad nefiltruotu, kiti skaiciai filterins, ne tas skaicius yra undefined behaviour
+        :param metodas: 0 ieskos pagal atlikimo data, 1 ieskos pagal pamokos data, nuo sito skirsis
+            kurios datos savaites data bus zinoma, o kuri bus null
         :return: [
                     {
                         "pamokos data": {
-                        "y": int,
-                        "m": int,
-                        "d": int
+                            "y": int,
+                            "m": int,
+                            "d": int,
+                            "w": int or None
                         },
                         "ivede": {
                             "y": int,
@@ -125,12 +129,12 @@ class TamoSession:
                             "y": int,
                             "m": int,
                             "d": int,
-                            "w": int
+                            "w": int or None
                         }
                     }, ...
                 ]
         """
-        return await scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id)
+        return await scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id, metodas)
 
     async def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None):
         """
@@ -208,6 +212,7 @@ class TamoSession:
 
     async def pranesimai(self, puslapis: int = 1, identification: str = None):
         """
+        :param puslapis: int
         :param identification: str tokenas, kuri reiktu issaugoti jeigu norima
             naudotis pranesimai ar pranesimas antra karta
         :return: {
@@ -243,7 +248,7 @@ class TamoSession:
 
     async def pranesimas(self, pranesimo_id: int, identification: str = None):
         """
-        :param message_id: int gaunamas funkcijoje pranesimai()
+        :param pranesimo_id: int gaunamas funkcijoje pranesimai()
         :param identification: str tokenas gaunamas funkcijoje pranesimai(), jeigu None bus gautas naujas
         :return: {
                     "html tekstas": str,
