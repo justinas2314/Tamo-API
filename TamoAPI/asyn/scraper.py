@@ -1,5 +1,7 @@
-import bs4
+import datetime
 import re
+
+import bs4
 
 REGEX = list(map(re.compile,
                  [
@@ -443,9 +445,9 @@ async def pusmeciai(session, parser, pusmecio_id):
             await open_url(session, "https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai"), parser)
     else:
         if pusmecio_id == 1:
-            pusmecio_id = 68453
+            pusmecio_id = 68457 + 4 * (datetime.datetime.now().year - 2023)
         elif pusmecio_id == 2:
-            pusmecio_id = 68454
+            pusmecio_id = 68458 + 4 * (datetime.datetime.now().year - 2023)
         elif pusmecio_id == 0:
             return pusmeciai0(session, parser)
         soup = bs4.BeautifulSoup(
@@ -453,7 +455,7 @@ async def pusmeciai(session, parser, pusmecio_id):
             parser)
     data = dict()
     rows = soup.find(class_="c_table_container").find("table").find_all("tr")[1:]
-    _, pazymiu, vidurkiu, isvestu = rows[-1].find_all("td")
+    _, pazymiu, vidurkiu, isvestu, *_ = rows[-1].find_all("td")
     data["vidurkis"] = dict()
     try:
         data["vidurkis"]["pazymiu"] = float(pazymiu.text.strip().replace(",", "."))

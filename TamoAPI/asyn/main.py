@@ -1,5 +1,6 @@
-import aiohttp
+import time
 
+import aiohttp
 from TamoAPI.asyn import scraper
 
 
@@ -10,9 +11,10 @@ class TamoSession:
     """
     @classmethod
     async def create(cls, username: str, password: str, *, parser: str = "html.parser",
-                     check_incorrect_login: bool = True):
+                     check_incorrect_login: bool = True, timeout: float = 0):
         tamo_session = TamoSession()
         tamo_session._parser = parser
+        tamo_session.timeout = timeout
         tamo_session.session = aiohttp.ClientSession()
         await scraper.log_in(tamo_session.session, parser, username, password, check_incorrect_login)
         return tamo_session
@@ -48,6 +50,7 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return await scraper.tvarkarastis(self.session, self._parser, savaite)
 
     async def dienynas(self, metai: int = None, menuo: int = None):
@@ -79,6 +82,7 @@ class TamoSession:
                     ]
                 }
         """
+        time.sleep(self.timeout)
         return await scraper.dienynas(self.session, self._parser, metai, menuo)
 
     async def pamokos(self, metai: int = None, menuo: int = None):
@@ -99,13 +103,14 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return await scraper.pamokos(self.session, self._parser, metai, menuo)
 
     async def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0, metodas: int = 0):
         """
 
-        :param nuo_data: formatas "YYYY-MM-DD"
-        :param iki_data: formatas "YYYY-MM-DD"
+        :param nuo_data: formatas "YYYY-MM-DD" imtinai
+        :param iki_data: formatas "YYYY-MM-DD" imtinai
         :param dalyko_id: 0 kad nefiltruotu, kiti skaiciai filterins, ne tas skaicius yra undefined behaviour
         :param metodas: 0 ieskos pagal atlikimo data, 1 ieskos pagal pamokos data, nuo sito skirsis
             kurios datos savaites data bus zinoma, o kuri bus null
@@ -134,6 +139,7 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return await scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id, metodas)
 
     async def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None):
@@ -151,6 +157,7 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return await scraper.atsiskaitomieji_darbai(self.session, self._parser, metai, menuo)
 
     async def pastabos(self):
@@ -176,6 +183,7 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return await scraper.pastabos(self.session, self._parser)
 
     async def pusmeciai(self, pusmecio_id: int = None):
@@ -208,6 +216,7 @@ class TamoSession:
                     ]
                 }
         """
+        time.sleep(self.timeout)
         return await scraper.pusmeciai(self.session, self._parser, pusmecio_id)
 
     async def pranesimai(self, puslapis: int = 1, identification: str = None):
@@ -244,6 +253,7 @@ class TamoSession:
                     ]
                 }
         """
+        time.sleep(self.timeout)
         return await scraper.pranesimai(self.session, puslapis, identification)
 
     async def pranesimas(self, pranesimo_id: int, identification: str = None):
@@ -261,6 +271,7 @@ class TamoSession:
                     ]
                 }
         """
+        time.sleep(self.timeout)
         return await scraper.pranesimas(self.session, pranesimo_id, identification)
 
     async def file_url(self, file_id: str):
@@ -270,6 +281,7 @@ class TamoSession:
                     "url": str  # url parsisiusti file
                 }
         """
+        time.sleep(self.timeout)
         return await scraper.file_url(self.session, file_id)
 
     async def proxy(self, method="get", *args, **kwargs):
@@ -278,6 +290,7 @@ class TamoSession:
         :param method: get, post, patch, ...
         :return: content from a request
         """
+        time.sleep(self.timeout)
         return await scraper.proxy(self.session, method.lower(), *args, **kwargs)
 
     async def close(self):
