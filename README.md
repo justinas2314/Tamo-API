@@ -26,3 +26,114 @@ Kaip naudotis `main.py` galima sužinoti atsidarius `main.py`, o `server.py` ats
 * Trimestrai / Pusmečiai (pusmeciai)  
 
 Šis API taip pat gali perskaityti gautus pranešimus (pranesimai, pranesimas, file_url).
+
+### Pavyzdžiai
+Į server.py galima žiūrėti kaip į šio API pritaikymo pavyzdį. Trumpesni ir paprastesni pavyzdžiai yra čia:
+##### Synchroninis
+```python
+import pprint
+from TamoAPI import TamoSession
+
+# timeout - automatiškai viduje callins time.sleep(self.timeout) prieš kiekvieną request,
+# todėl jums netyčia įvėlus bug'ą mažesnė tikimybė, kad tamo serveriai gaus 200 req/s, o jūs laikiną ip ban'ą
+with TamoSession(USERNAME, PASSWORD, timeout=1) as session:
+    print('Namu darbai:')
+    for namu_darbo_irasas in session.namu_darbai():
+        pprint.pprint(namu_darbo_irasas)
+
+    print('Namu darbai pagal data:')
+    for namu_darbo_irasas in session.namu_darbai('2023-01-01', '2023-01-31'):
+        pprint.pprint(namu_darbo_irasas)
+
+    pusmeciu_duomenys = session.pusmeciai(1)
+
+    print('Vidurkis:')
+    pprint.pprint(pusmeciu_duomenys['vidurkis'])
+
+    print('Kiekvieno dalyko vidurkiai:')
+    for dalykas in pusmeciu_duomenys['dalykai']:
+        del dalykas['mokytojai']
+        del dalykas['pazymiai']
+        pprint.pprint(dalykas)
+
+```
+##### Asynchroninis
+```python
+import pprint
+import asyncio
+from TamoAPI.asyn import TamoSession
+
+
+async def main():
+    async with TamoSession(USERNAME, PASSWORD, timeout=1) as session:
+        print('Namu darbai:')
+        for namu_darbo_irasas in await session.namu_darbai():
+            pprint.pprint(namu_darbo_irasas)
+
+        print('Namu darbai pagal data:')
+        for namu_darbo_irasas in await session.namu_darbai('2023-01-01', '2023-01-31'):
+            pprint.pprint(namu_darbo_irasas)
+
+        pusmeciu_duomenys = await session.pusmeciai(1)
+
+        print('Vidurkis:')
+        pprint.pprint(pusmeciu_duomenys['vidurkis'])
+
+        print('Kiekvieno dalyko vidurkiai:')
+        for dalykas in pusmeciu_duomenys['dalykai']:
+            del dalykas['mokytojai']
+            del dalykas['pazymiai']
+            pprint.pprint(dalykas)
+
+asyncio.run(main())
+```
+##### Galimas rezultatas
+```
+Namu darbai:
+{'atlikimo data': {'d': 8, 'm': 5, 'w': 1, 'y': 2023},
+ 'failai': [],
+ 'ivede': {'d': 2, 'h': 12, 'm': 5, 'min': 57, 'y': 2023},
+ 'namu darbas': 'To read the texts.',
+ 'pamokos data': {'d': 2, 'm': 5, 'w': None, 'y': 2023}}
+{'atlikimo data': {'d': 8, 'm': 5, 'w': 1, 'y': 2023},
+ 'failai': [],
+ 'ivede': {'d': 2, 'h': 13, 'm': 5, 'min': 12, 'y': 2023},
+ 'namu darbas': 'To read the texts.',
+ 'pamokos data': {'d': 2, 'm': 5, 'w': None, 'y': 2023}}
+Namu darbai pagal data:
+{'atlikimo data': {'d': 17, 'm': 1, 'w': 2, 'y': 2023},
+ 'failai': [],
+ 'ivede': {'d': 16, 'h': 14, 'm': 1, 'min': 52, 'y': 2023},
+ 'namu darbas': 'To finish reading the given texts.',
+ 'pamokos data': {'d': 16, 'm': 1, 'w': None, 'y': 2023}}
+{'atlikimo data': {'d': 18, 'm': 1, 'w': 3, 'y': 2023},
+ 'failai': [],
+ 'ivede': {'d': 16, 'h': 21, 'm': 1, 'min': 3, 'y': 2023},
+ 'namu darbas': 'Technisierung. Hörverstehen',
+ 'pamokos data': {'d': 16, 'm': 1, 'w': None, 'y': 2023}}
+{'atlikimo data': {'d': 23, 'm': 1, 'w': 1, 'y': 2023},
+ 'failai': [],
+ 'ivede': {'d': 17, 'h': 16, 'm': 1, 'min': 38, 'y': 2023},
+ 'namu darbas': 'To read 3 texts.',
+ 'pamokos data': {'d': 17, 'm': 1, 'w': None, 'y': 2023}}
+{'atlikimo data': {'d': 25, 'm': 1, 'w': 3, 'y': 2023},
+ 'failai': [],
+ 'ivede': {'d': 24, 'h': 7, 'm': 1, 'min': 28, 'y': 2023},
+ 'namu darbas': 'Übungen beenden und Vokabeln in Sätzen lernen',
+ 'pamokos data': {'d': 23, 'm': 1, 'w': None, 'y': 2023}}
+Vidurkis:
+{'isvestu pazymiu': 8.86, 'pazymiu': 8.65, 'vidurkiu': None}
+Kiekvieno dalyko vidurkiai:
+{'dalykas': 'Dorinis ugdymas (etika)', 'isvesta': 'įsk.', 'vidurkis': None}
+{'dalykas': 'Fizika', 'isvesta': '7', 'vidurkis': '7.17'}
+{'dalykas': 'Fizinis ugdymas', 'isvesta': 'įsk.', 'vidurkis': None}
+{'dalykas': 'Informacinės technologijos', 'isvesta': '10', 'vidurkis': '9.6'}
+{'dalykas': 'Istorija', 'isvesta': '9', 'vidurkis': '8.67'}
+{'dalykas': 'Istorijos modulis', 'isvesta': None, 'vidurkis': None}
+{'dalykas': 'Lietuvių kalba ir literatūra', 'isvesta': '8', 'vidurkis': '7.5'}
+{'dalykas': 'Matematika', 'isvesta': '8', 'vidurkis': '8.29'}
+{'dalykas': 'Menų pažinimas', 'isvesta': 'įsk.', 'vidurkis': None}
+{'dalykas': 'Muzika', 'isvesta': None, 'vidurkis': None}
+{'dalykas': 'Užsienio kalba (anglų)', 'isvesta': '10', 'vidurkis': '9.67'}
+{'dalykas': 'Užsienio kalba (vokiečių)', 'isvesta': '10', 'vidurkis': '9.75'}
+```
