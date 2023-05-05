@@ -1,3 +1,5 @@
+import time
+
 import requests
 
 from TamoAPI import scraper
@@ -9,9 +11,10 @@ class TamoSession:
     kažkas nesigauna galima bandyti per naują prisijungti su nauju TamoSession()
     """
     def __init__(self, username: str, password: str,
-                 *, parser: str = "html.parser", check_incorrect_login: bool = True):
+                 *, parser: str = "html.parser", check_incorrect_login: bool = True, timeout: float = 0):
         self._parser = parser
         self.session = requests.Session()
+        self.timeout = timeout
         scraper.log_in(self.session, parser, username, password, check_incorrect_login)
 
     def __enter__(self):
@@ -43,6 +46,7 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return scraper.tvarkarastis(self.session, self._parser, savaite)
 
     def dienynas(self, metai: int = None, menuo: int = None):
@@ -74,6 +78,7 @@ class TamoSession:
                     ]
                 }
         """
+        time.sleep(self.timeout)
         return scraper.dienynas(self.session, self._parser, metai, menuo)
 
     def pamokos(self, metai: int = None, menuo: int = None):
@@ -94,13 +99,14 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return scraper.pamokos(self.session, self._parser, metai, menuo)
 
     def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0, metodas: int = 0):
         """
 
-        :param nuo_data: formatas "YYYY-MM-DD"
-        :param iki_data: formatas "YYYY-MM-DD"
+        :param nuo_data: formatas "YYYY-MM-DD" imtinai
+        :param iki_data: formatas "YYYY-MM-DD" imtinai
         :param dalyko_id: 0 kad nefiltruotu, kiti skaiciai filterins, ne tas skaicius yra undefined behaviour
         :param metodas: 0 ieskos pagal atlikimo data, 1 ieskos pagal pamokos data, nuo sito skirsis
             kurios datos savaites data bus zinoma, o kuri bus null
@@ -133,6 +139,7 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id, metodas)
 
     def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None):
@@ -150,6 +157,7 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return scraper.atsiskaitomieji_darbai(self.session, self._parser, metai, menuo)
 
     def pastabos(self):
@@ -175,6 +183,7 @@ class TamoSession:
                     }, ...
                 ]
         """
+        time.sleep(self.timeout)
         return scraper.pastabos(self.session, self._parser)
 
     def pusmeciai(self, pusmecio_id: int = None):
@@ -207,6 +216,7 @@ class TamoSession:
                     ]
                 }
         """
+        time.sleep(self.timeout)
         return scraper.pusmeciai(self.session, self._parser, pusmecio_id)
 
     def pranesimai(self, puslapis: int = 1, identification: str = None):
@@ -243,6 +253,7 @@ class TamoSession:
                     ]
                 }
         """
+        time.sleep(self.timeout)
         return scraper.pranesimai(self.session, puslapis, identification)
 
     def pranesimas(self, pranesimo_id: int, identification: str = None):
@@ -260,6 +271,7 @@ class TamoSession:
                     ]
                 }
         """
+        time.sleep(self.timeout)
         return scraper.pranesimas(self.session, pranesimo_id, identification)
 
     def file_url(self, file_id: str):
@@ -269,6 +281,7 @@ class TamoSession:
                     "url": str  # url parsisiusti file
                 }
         """
+        time.sleep(self.timeout)
         return scraper.file_url(self.session, file_id)
 
     def proxy(self, method="get", *args, **kwargs):
@@ -277,4 +290,5 @@ class TamoSession:
         :param method: get, post, patch, ...
         :return: content from a request
         """
+        time.sleep(self.timeout)
         return scraper.proxy(self.session, method.lower(), *args, **kwargs)
