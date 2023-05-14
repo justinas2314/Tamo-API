@@ -135,7 +135,9 @@ class TamoSession:
                             "m": int,
                             "d": int,
                             "w": int or None
-                        }
+                        },
+                        "dalykas": str,
+                        "mokytojas": str
                     }, ...
                 ]
         """
