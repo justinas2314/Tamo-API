@@ -276,7 +276,10 @@ async def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id, metodas):
         if style == "margin:25px 0px;":
             kazkokia_data = i.find("span").text.replace("\n", "").strip()
         elif style == "margin-top:10px;margin-bottom:10px;":
-            temp = {"failai": []}
+            try:
+                temp = {"failai": [], "dalykas": i.find_next(class_="col-md-13").next_element.next_element.text.strip()}
+            except AttributeError:
+                continue
             for b in i.find_all("b"):
                 t = b.text.strip()
                 if t == "Pamokos data:":
@@ -287,7 +290,7 @@ async def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id, metodas):
                         "d": int(groups[2]),
                         "w": None
                     }
-                elif t == "Mokytojas(-a)":
+                elif t == "Mokytojas(-a):":
                     temp["mokytojas"] = b.next.next.strip()
                 elif t == "įvedė:":
                     groups = REGEX[3].match(b.next.next.strip()).groups()
