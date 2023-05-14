@@ -129,13 +129,15 @@ class TamoSession:
                             "h": int,
                             "min": int
                         },
-                        "namu darbas": "str",
+                        "namu darbas": str,
                         "atlikimo data": {
                             "y": int,
                             "m": int,
                             "d": int,
                             "w": int or None
-                        }
+                        },
+                        "dalykas": str,
+                        "mokytojas": str
                     }, ...
                 ]
         """
