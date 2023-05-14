@@ -39,10 +39,12 @@ from TamoAPI import TamoSession
 with TamoSession(USERNAME, PASSWORD, timeout=1) as session:
     print('Namu darbai:')
     for namu_darbo_irasas in session.namu_darbai():
+        del namu_darbo_irasas['mokytojas']
         pprint.pprint(namu_darbo_irasas)
 
     print('Namu darbai pagal data:')
     for namu_darbo_irasas in session.namu_darbai('2023-01-01', '2023-01-31'):
+        del namu_darbo_irasas['mokytojas']
         pprint.pprint(namu_darbo_irasas)
 
     pusmeciu_duomenys = session.pusmeciai(1)
@@ -68,10 +70,12 @@ async def main():
     async with TamoSession(USERNAME, PASSWORD, timeout=1) as session:
         print('Namu darbai:')
         for namu_darbo_irasas in await session.namu_darbai():
+            del namu_darbo_irasas['mokytojas']
             pprint.pprint(namu_darbo_irasas)
 
         print('Namu darbai pagal data:')
         for namu_darbo_irasas in await session.namu_darbai('2023-01-01', '2023-01-31'):
+            del namu_darbo_irasas['mokytojas']
             pprint.pprint(namu_darbo_irasas)
 
         pusmeciu_duomenys = await session.pusmeciai(1)
@@ -90,33 +94,39 @@ asyncio.run(main())
 ##### Galimas rezultatas
 ```
 Namu darbai:
-{'atlikimo data': {'d': 8, 'm': 5, 'w': 1, 'y': 2023},
+{'atlikimo data': {'d': 15, 'm': 5, 'w': 1, 'y': 2023},
+ 'dalykas': 'Užsienio kalba (anglų)',
  'failai': [],
- 'ivede': {'d': 2, 'h': 12, 'm': 5, 'min': 57, 'y': 2023},
- 'namu darbas': 'To read the texts.',
- 'pamokos data': {'d': 2, 'm': 5, 'w': None, 'y': 2023}}
-{'atlikimo data': {'d': 8, 'm': 5, 'w': 1, 'y': 2023},
+ 'ivede': {'d': 8, 'h': 12, 'm': 5, 'min': 41, 'y': 2023},
+ 'namu darbas': 'To do exams',
+ 'pamokos data': {'d': 8, 'm': 5, 'w': None, 'y': 2023}}
+{'atlikimo data': {'d': 15, 'm': 5, 'w': 1, 'y': 2023},
+ 'dalykas': 'Užsienio kalba (anglų)',
  'failai': [],
- 'ivede': {'d': 2, 'h': 13, 'm': 5, 'min': 12, 'y': 2023},
- 'namu darbas': 'To read the texts.',
- 'pamokos data': {'d': 2, 'm': 5, 'w': None, 'y': 2023}}
+ 'ivede': {'d': 8, 'h': 12, 'm': 5, 'min': 41, 'y': 2023},
+ 'namu darbas': 'To do exams',
+ 'pamokos data': {'d': 8, 'm': 5, 'w': None, 'y': 2023}}
 Namu darbai pagal data:
 {'atlikimo data': {'d': 17, 'm': 1, 'w': 2, 'y': 2023},
+ 'dalykas': 'Užsienio kalba (anglų)',
  'failai': [],
  'ivede': {'d': 16, 'h': 14, 'm': 1, 'min': 52, 'y': 2023},
  'namu darbas': 'To finish reading the given texts.',
  'pamokos data': {'d': 16, 'm': 1, 'w': None, 'y': 2023}}
 {'atlikimo data': {'d': 18, 'm': 1, 'w': 3, 'y': 2023},
+ 'dalykas': 'Užsienio kalba (vokiečių)',
  'failai': [],
  'ivede': {'d': 16, 'h': 21, 'm': 1, 'min': 3, 'y': 2023},
  'namu darbas': 'Technisierung. Hörverstehen',
  'pamokos data': {'d': 16, 'm': 1, 'w': None, 'y': 2023}}
 {'atlikimo data': {'d': 23, 'm': 1, 'w': 1, 'y': 2023},
+ 'dalykas': 'Užsienio kalba (anglų)',
  'failai': [],
  'ivede': {'d': 17, 'h': 16, 'm': 1, 'min': 38, 'y': 2023},
  'namu darbas': 'To read 3 texts.',
  'pamokos data': {'d': 17, 'm': 1, 'w': None, 'y': 2023}}
 {'atlikimo data': {'d': 25, 'm': 1, 'w': 3, 'y': 2023},
+ 'dalykas': 'Užsienio kalba (vokiečių)',
  'failai': [],
  'ivede': {'d': 24, 'h': 7, 'm': 1, 'min': 28, 'y': 2023},
  'namu darbas': 'Übungen beenden und Vokabeln in Sätzen lernen',
