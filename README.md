@@ -1,5 +1,6 @@
 # Tamo-API
 Tamo.lt scraper that acts as an unofficial API  
+Kadangi baigiau gimnaziją ir todėl praradau savo paskyrą, nebegaliu užtikrinti, kad visas kodas vis dar veikia teisingai. Skatinu radus bug sukurti issue arba jį pafixinti forke
 ## Perspėjimai
 Norint naudoti API reikia duoti script/server savo prisijungimo duomenis, o tai įprastai yra bloga idėja, tai prašau įsitikinti, kad šis API nieko blogo nedarys.  
 Tamo priverčia po tam tikro laiko tarpo atsijungti, šis API to neatpažins, todėl reikės pasinaudot smegenim ir kas 30-60 min susikurti naują login session.  
