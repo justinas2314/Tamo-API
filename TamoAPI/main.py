@@ -81,7 +81,7 @@ class TamoSession:
         time.sleep(self.timeout)
         return scraper.dienynas(self.session, self._parser, metai, menuo)
 
-    def pamokos(self, metai: int = None, menuo: int = None):
+    def pamokos(self, metai: int = None, menuo: int = None, mmid: int = None):
         """
         :return: [
                     {
@@ -100,7 +100,7 @@ class TamoSession:
                 ]
         """
         time.sleep(self.timeout)
-        return scraper.pamokos(self.session, self._parser, metai, menuo)
+        return scraper.pamokos(self.session, self._parser, metai, menuo, mmid)
 
     def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0, metodas: int = 0):
         """
@@ -144,7 +144,7 @@ class TamoSession:
         time.sleep(self.timeout)
         return scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id, metodas)
 
-    def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None):
+    def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None, mmid: int = None):
         """
         :return: [
                     {
@@ -160,7 +160,7 @@ class TamoSession:
                 ]
         """
         time.sleep(self.timeout)
-        return scraper.atsiskaitomieji_darbai(self.session, self._parser, metai, menuo)
+        return scraper.atsiskaitomieji_darbai(self.session, self._parser, metai, menuo, mmid)
 
     def pastabos(self):
         """
