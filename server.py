@@ -63,7 +63,8 @@ DOCS = {
     "pamokos": {
         "request fields": {
             "metai": "int or null",
-            "menuo": "int or null"
+            "menuo": "int or null",
+            "mmid": "int or null",
         }, "response fields": {
             "dalykas": "str Fizika/Matematika/...",
             "mokytojas": "str Vardenis Paverdenis",
@@ -112,8 +113,9 @@ DOCS = {
     },
     "atsiskaitomieji_darbai": {
         "request fields": {
-            "metai": "int",
-            "menuo": "int"
+            "metai": "int or null",
+            "menuo": "int or null",
+            "mmid": "int or null"
         }, "response fields": {
             "dalykas": "str Fizika/Muzika/...",
             "grupe": "str 2c/2C programavimas/...",
@@ -146,7 +148,7 @@ DOCS = {
     },
     "pusmeciai": {
         "request fields": {
-            "pusmecio id": "str or null 0=metinis;1=pirmas pusmetis;2=antras pusmetis"
+            "pusmecio id": "str or null; randamas url https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/X"
         }, "response fields": {
             "vidurkis": {
                 "pazymiu": "float or null",
@@ -369,9 +371,10 @@ def pamokos():
     if json is not None:
         metai = json.get("metai")
         menuo = json.get("menuo")
+        mmid = json.get("mmid")
     else:
-        metai = menuo = None
-    return flask.jsonify(user.pamokos(metai, menuo))
+        metai = menuo = mmid = None
+    return flask.jsonify(user.pamokos(metai, menuo, mmid))
 
 
 @app.route("/namu_darbai", methods=["post", "get"])
@@ -401,9 +404,10 @@ def atsiskaitomieji_darbai():
     if json is not None:
         metai = json.get("metai")
         menuo = json.get("menuo")
+        mmid = json.get("mmid")
     else:
-        metai = menuo = None
-    return flask.jsonify(user.atsiskaitomieji_darbai(metai, menuo))
+        metai = menuo = mmid = None
+    return flask.jsonify(user.atsiskaitomieji_darbai(metai, menuo, mmid))
 
 
 @app.route("/pastabos", methods=["post", "get"])
