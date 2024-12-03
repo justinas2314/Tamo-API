@@ -85,7 +85,7 @@ class TamoSession:
         time.sleep(self.timeout)
         return await scraper.dienynas(self.session, self._parser, metai, menuo)
 
-    async def pamokos(self, metai: int = None, menuo: int = None):
+    async def pamokos(self, metai: int = None, menuo: int = None, mmid: int = None):
         """
         :return: [
                     {
@@ -104,7 +104,7 @@ class TamoSession:
                 ]
         """
         time.sleep(self.timeout)
-        return await scraper.pamokos(self.session, self._parser, metai, menuo)
+        return await scraper.pamokos(self.session, self._parser, metai, menuo, mmid)
 
     async def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0, metodas: int = 0):
         """
@@ -144,7 +144,7 @@ class TamoSession:
         time.sleep(self.timeout)
         return await scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id, metodas)
 
-    async def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None):
+    async def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None, mmid: int = None):
         """
         :return: [
                     {
@@ -160,7 +160,7 @@ class TamoSession:
                 ]
         """
         time.sleep(self.timeout)
-        return await scraper.atsiskaitomieji_darbai(self.session, self._parser, metai, menuo)
+        return await scraper.atsiskaitomieji_darbai(self.session, self._parser, metai, menuo, mmid)
 
     async def pastabos(self):
         """
