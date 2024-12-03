@@ -1,11 +1,10 @@
-import datetime
 import re
 
 import bs4
 
 REGEX = list(map(re.compile,
                  [
-                     "(..):(..) - (..):(..)",
+                     "(..):(..)",
                      ".*, (.*?) [(](.*) (..)[)].*",
                      "(....)-(..)-(..)",
                      "(....)-(..)-(..) (..):(..)",
@@ -19,20 +18,14 @@ REGEX = list(map(re.compile,
 
 async def open_url(session, url, *args, **kwargs):
     async with session.get(url, *args, **kwargs) as r:
-        try:
-            assert r.status == 200
-        except AssertionError:
-            raise
+        assert r.status == 200
         html = await r.text()
     return html
 
 
 async def post_req(session, url, *args, **kwargs):
     async with session.post(url, *args, **kwargs) as r:
-        try:
-            assert r.status == 200
-        except AssertionError:
-            raise
+        assert r.status == 200
         html = await r.text()
     return html
 
@@ -110,6 +103,67 @@ def savaites_diena2(raw):
     }[raw]
 
 
+def get_date(junk, metodas):
+    kazkokia_data = junk.find("label").text.replace("\n", "").strip()
+    groups = REGEX[4].match(kazkokia_data).groups()
+    if metodas == 0:
+        date = {
+            "y": int(groups[0]),
+            "m": int(groups[1]),
+            "d": int(groups[2]),
+            "w": savaites_diena2(groups[3])
+        }
+    else:
+        date = {
+            "y": int(groups[0]),
+            "m": int(groups[1]),
+            "d": int(groups[2]),
+            "w": savaites_diena2(groups[3])
+        }
+    return date
+
+
+def get_info(junk):
+    temp = {"dalykas": junk.find_next("div").text.strip()}
+    for i in junk.find_all("label"):
+        t, v = i.text.strip(), i.next.next.strip()
+        match t:
+            case "Pamokos data:":
+                groups = REGEX[2].match(v).groups()
+                temp["pamokos data"] = {
+                    "y": int(groups[0]),
+                    "m": int(groups[1]),
+                    "d": int(groups[2]),
+                    "w": None
+                }
+            case "Mokytojas(-a):":
+                temp["mokytojas"] = v
+            case "įvedė:":
+                groups = REGEX[3].match(v).groups()
+                temp["ivede"] = {
+                    "y": int(groups[0]),
+                    "m": int(groups[1]),
+                    "d": int(groups[2]),
+                    "h": int(groups[3]),
+                    "min": int(groups[4])
+                }
+            case "Failai:":
+                for a in i.parent.find_all("a"):
+                    temp["failai"].append({
+                        "pavadinimas": a.text.strip(),
+                        "url": f"https://dienynas.tamo.lt{a.get('href')}"
+                    })
+            case "Atlikimo data:":
+                groups = REGEX[2].match(v).groups()
+                temp["atlikimo data"] = {
+                    "y": int(groups[0]),
+                    "m": int(groups[1]),
+                    "d": int(groups[2]),
+                    "w": None
+                }
+    return temp
+
+
 async def log_in(session, parser, username, password, check):
     data = dict()
     first_soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/Prisijungimas/Login"), parser)
@@ -124,9 +178,7 @@ async def log_in(session, parser, username, password, check):
     data["Password"] = password
     if check:
         soup = bs4.BeautifulSoup(await post_req(session, "https://dienynas.tamo.lt/?clickMode=True", data=data), parser)
-        try:
-            assert "Prisijungimas" not in soup.find("title").text
-        except AssertionError:
+        if "Prisijungimas" in soup.find("title").text:
             raise AssertionError("Incorrect Login Info")
     else:
         await post_req(session, "https://dienynas.tamo.lt/?clickMode=True", data=data)
@@ -137,23 +189,25 @@ async def tvarkarastis(session, parser, savaite):
            if savaite is None else f"https://dienynas.tamo.lt/TvarkarascioIrasas/MokinioTvarkarastis?data={savaite}")
     soup = bs4.BeautifulSoup(await open_url(session, url), parser)
     data = []
-    for i in soup.find_all(class_="c_block padLess borderless")[1:]:
+    for i in soup.find_all("table", class_="full_width form-horizontal table table-hover table-responsive"):
         temp = []
         for j in i.find_all("tr")[1:]:
-            temper = dict(zip(("numeris", "laikas", "dalykas", "mokytojas"),
-                              map(lambda x: x.text.strip(), j.find_all("td")[1:])))
+            temper = dict(zip(("numeris", "laikas", "pabaiga", "dalykas", "mokytojas"),
+                              map(lambda x: x.text.strip(), j.find_all("td"))))
             try:
-                laikas = temper["laikas"]
+                grupes = REGEX[0].match(temper["laikas"]).groups()
+            # jei pagavom mitini "Pamoku nera"
             except KeyError:
                 continue
-            grupes = REGEX[0].match(laikas).groups()
             temper["pradzia"] = {
                 "h": int(grupes[0]),
                 "m": int(grupes[1])
             }
+            temper["laikas"] += " - " + temper["pabaiga"]
+            grupes = REGEX[0].match(temper["pabaiga"]).groups()
             temper["pabaiga"] = {
-                "h": int(grupes[2]),
-                "m": int(grupes[3])
+                "h": int(grupes[0]),
+                "m": int(grupes[1])
             }
             temp.append(temper)
         data.append(temp)
@@ -211,17 +265,20 @@ async def dienynas(session, parser, metai, menuo):
     return {"ivertinimai": ivertinimai, "lankomumas": lankomumai}
 
 
-async def pamokos(session, parser, metai, menesis):
-    if metai is None or menesis is None:
+async def pamokos(session, parser, metai, menesis, mmid):
+    if mmid is not None:
+        url = f"https://dienynas.tamo.lt/Pamoka/MokinioPamokuPartial?moksloMetuMenesiaiId={mmid}&krautiVisaMenesi=True"
+    elif metai is not None and menesis is not None:
+        mmid = (metai - 2014) * 12 + menesis + 5
+        url = f"https://dienynas.tamo.lt/Pamoka/MokinioPamokuPartial?moksloMetuMenesiaiId={mmid}&krautiVisaMenesi=True"
+    else:
         # have to make an extra request if metai and menesis are not specified
         soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/Pamoka/Sarasas"), parser)
-        soup = bs4.BeautifulSoup(
-            await post_req(session, "https://dienynas.tamo.lt" + soup.find_all("a")[-1]['href']), parser)
-    else:
-        soup = bs4.BeautifulSoup(
-            await post_req(session,
-                           f"https://dienynas.tamo.lt/Pamoka/MokinioPamokuPartial?"
-                           f"moksloMetuMenesiaiId={(metai - 2010) * 12 + menesis - 7}&krautiVisaMenesi=True"), parser)
+        for i in reversed(soup.find_all("a")):
+            if "Daugiau" in i.text:
+                url = "https://dienynas.tamo.lt" + i["href"]
+                break
+    soup = bs4.BeautifulSoup(await post_req(session, url), parser)
     data = []
     for i in soup.find_all(class_="row", recursive=False):
         raw_menuo, raw_diena, raw_sav = i.find_all(class_="f-header")[1:4]
@@ -271,82 +328,37 @@ async def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id, metodas):
                                                     "DataIki": iki_data,
                                                     "DalykoId": str(dalyko_id)}), parser)
     data = []
-    for i in soup.find_all(class_="row"):
-        style = i.get("style")
-        if style == "margin:25px 0px;":
-            kazkokia_data = i.find("span").text.replace("\n", "").strip()
-        elif style == "margin-top:10px;margin-bottom:10px;":
-            try:
-                temp = {"failai": [], "dalykas": i.find_next(class_="col-md-13").next_element.next_element.text.strip()}
-            except AttributeError:
-                continue
-            for b in i.find_all("b"):
-                t = b.text.strip()
-                if t == "Pamokos data:":
-                    groups = REGEX[2].match(b.next.next.strip()).groups()
-                    temp["pamokos data"] = {
-                        "y": int(groups[0]),
-                        "m": int(groups[1]),
-                        "d": int(groups[2]),
-                        "w": None
-                    }
-                elif t == "Mokytojas(-a):":
-                    temp["mokytojas"] = b.next.next.strip()
-                elif t == "įvedė:":
-                    groups = REGEX[3].match(b.next.next.strip()).groups()
-                    temp["ivede"] = {
-                        "y": int(groups[0]),
-                        "m": int(groups[1]),
-                        "d": int(groups[2]),
-                        "h": int(groups[3]),
-                        "min": int(groups[4])
-                    }
-                elif t == "Failai:":
-                    for a in b.parent.find_all("a"):
-                        temp["failai"].append({
-                            "pavadinimas": a.text.strip(),
-                            "url": f"https://dienynas.tamo.lt{a.get('href')}"
-                        })
-                elif t == "Atlikimo data:":
-                    groups = REGEX[2].match(b.next.next.strip()).groups()
-                    temp["atlikimo data"] = {
-                        "y": int(groups[0]),
-                        "m": int(groups[1]),
-                        "d": int(groups[2]),
-                        "w": None
-                    }
-        elif style is None:
-            try:
-                if "namu darbas" not in temp:
-                    temp["namu darbas"] = i.text.strip()
-            except UnboundLocalError:  # jei date range nespecified ir scrapina default page
-                continue
-            groups = REGEX[4].match(kazkokia_data).groups()
-            if metodas == 0:
-                temp["atlikimo data"] = {
-                    "y": int(groups[0]),
-                    "m": int(groups[1]),
-                    "d": int(groups[2]),
-                    "w": savaites_diena2(groups[3])
-                }
+    soup = soup.find("div", class_="namu_darbai_content")
+    for i in soup.find_all("div"):
+        try:
+            classes = i["class"]
+        except KeyError:
+            continue
+        if "col-md-10" in classes:
+            current_date = get_date(i, 0)
+        elif "col-md-13" in classes:
+            temp = get_info(i)
+            if len(temp) == 1 and len(temp["dalykas"]) > 0:
+                entry = {"namu darbas": temp["dalykas"]}
+                entry |= current_info
+                entry["atlikimo data" if metodas == 0 else "pamokos data"] = current_date
+                data.append(entry)
             else:
-                temp["pamokos data"] = {
-                    "y": int(groups[0]),
-                    "m": int(groups[1]),
-                    "d": int(groups[2]),
-                    "w": savaites_diena2(groups[3])
-                }
-            data.append(temp)
-            del temp
+                current_info = temp
     return data
 
 
-async def atsiskaitomieji_darbai(session, parser, metai, menesis):
-    if metai is not None and menesis is not None:
+async def atsiskaitomieji_darbai(session, parser, metai, menesis, mmid):
+    if mmid is not None:
+        soup = bs4.BeautifulSoup(
+            await open_url(session,
+                           f"https://dienynas.tamo.lt/Darbai/Atsiskaitymai?MoksloMetuMenesioId={mmid}"), parser)
+    elif metai is not None and menesis is not None:
         soup = bs4.BeautifulSoup(
             await open_url(session,
                            f"https://dienynas.tamo.lt/Darbai/Atsiskaitymai"
-                           f"?MoksloMetuMenesioId={(metai - 2010) * 12 + menesis - 7}"), parser)
+                           # atrodo jie sita formule pakeicia kasmet wtf plz visi naudokit mmid
+                           f"?MoksloMetuMenesioId={(metai - 2014) * 12 + menesis + 5}"), parser)
     else:
         soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/Darbai/Atsiskaitymai"), parser)
     data = []
@@ -380,7 +392,7 @@ async def pastabos(session, parser):
                 temp[names[index]] = k.text.strip()
                 index += 1
         first_date, second_date = divs[2].find_all("div")
-        first_group = REGEX[2].match(second_date.text.strip()).groups()
+        first_group = REGEX[2].match(first_date.text.strip()).groups()
         temp["pamokos data"] = {
             "y": int(first_group[0]),
             "m": int(first_group[1]),
@@ -402,8 +414,9 @@ async def pusmeciai0(session, parser):
     soup = bs4.BeautifulSoup(await open_url(session, "https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/0"),
                              parser)
     data = {}
-    rows = soup.find(class_="c_table_container").find("table").find_all("tr")[2:]
-    _, pazymiu, vidurkiu, isvestu = rows[-1].find_all("td")
+    rows = soup.find("table", class_="c_main_table wrap_text c_block").find_all("tr")[2:]
+    _, pazymiu, vidurkiu, pagr_isvestu, pap_isvestu = rows[-1].find_all("td")
+    isvestu_text = max(pagr_isvestu.text.strip(), pap_isvestu.text.strip(), key=len)
     data["vidurkis"] = dict()
     try:
         data["vidurkis"]["pazymiu"] = float(pazymiu.text.strip().replace(",", "."))
@@ -414,7 +427,7 @@ async def pusmeciai0(session, parser):
     except ValueError:
         data["vidurkis"]["vidurkiu"] = None
     try:
-        data["vidurkis"]["isvestu pazymiu"] = float(isvestu.text.strip().replace(",", "."))
+        data["vidurkis"]["isvestu pazymiu"] = float(isvestu_text.replace(",", "."))
     except ValueError:
         data["vidurkis"]["isvestu pazymiu"] = None
     dalykai = []
@@ -443,21 +456,17 @@ async def pusmeciai0(session, parser):
 
 
 async def pusmeciai(session, parser, pusmecio_id):
+    if pusmecio_id == 0:
+        return await pusmeciai0(session, parser)
     if pusmecio_id is None:
         soup = bs4.BeautifulSoup(
             await open_url(session, "https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai"), parser)
     else:
-        if pusmecio_id == 1:
-            pusmecio_id = 68457 + 4 * (datetime.datetime.now().year - 2023)
-        elif pusmecio_id == 2:
-            pusmecio_id = 68458 + 4 * (datetime.datetime.now().year - 2023)
-        elif pusmecio_id == 0:
-            return pusmeciai0(session, parser)
         soup = bs4.BeautifulSoup(
             await open_url(session, f"https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/{pusmecio_id}"),
             parser)
     data = dict()
-    rows = soup.find(class_="c_table_container").find("table").find_all("tr")[1:]
+    rows = soup.find(id="c_main").find("table").find_all("tr")[1:]
     _, pazymiu, vidurkiu, isvestu, *_ = rows[-1].find_all("td")
     data["vidurkis"] = dict()
     try:
@@ -512,21 +521,13 @@ async def pranesimai(session, page, identification):
         await open_url(session, "https://dienynas.tamo.lt/GoTo/Bendrauk")
         async with session.get("https://api.tamo.lt/messaging/core/roles",
                                headers={"Accept": "application/json"}) as r:
-            try:
-                assert r.status == 200
-            except AssertionError:
-                raise
-            else:
-                identification = (await r.json())["items"][0]["id"]
+            assert r.status == 200
+            identification = (await r.json())["items"][0]["id"]
     async with session.get(
             f"https://api.tamo.lt/messaging/messages/received?orderDescending=true&searchTerm=&page={page}",
             headers={"Accept": "application/json", "x-selected-role": identification}) as r:
-        try:
-            assert r.status == 200
-        except AssertionError:
-            raise
-        else:
-            raw_data = await r.json()
+        assert r.status == 200
+        raw_data = await r.json()
     data = []
     for i in raw_data["items"]:
         first_groups = REGEX[8].match(i["date"]).groups()
@@ -567,20 +568,12 @@ async def pranesimas(session, message_id, identification):
         await open_url(session, "https://dienynas.tamo.lt/GoTo/Bendrauk")
         async with session.get("https://api.tamo.lt/messaging/core/roles",
                                headers={"Accept": "application/json"}) as r:
-            try:
-                assert r.status == 200
-            except AssertionError:
-                raise
-            else:
-                identification = (await r.json())["items"][0]["id"]
+            assert r.status == 200
+            identification = (await r.json())["items"][0]["id"]
     async with session.get(f"https://api.tamo.lt/messaging/messages/received/{message_id}",
                            headers={"Accept": "application/json", "x-selected-role": identification}) as r:
-        try:
-            assert r.status == 200
-        except AssertionError:
-            raise
-        else:
-            raw_data = await r.json()
+        assert r.status == 200
+        raw_data = await r.json()
     try:
         data = {
             "html tekstas": raw_data["item"]["body"],
@@ -602,15 +595,10 @@ async def file_url(session, file_id):
     async with session.post("https://api.tamo.lt/files/filedownloadurl",
                             headers={"Content-Type": "application/json"},
                             json={"fileSid": file_id}) as r:
-        try:
-            assert r.status == 200
-        except AssertionError:
-            if r.status == 404:
-                raise FileNotFoundError
-            else:
-                raise
-        else:
-            return await r.json()
+        if r.status_code == 404:
+            raise FileNotFoundError
+        assert r.status_code == 200
+        return await r.json()
 
 
 async def proxy(session, method="get", *args, **kwargs):
