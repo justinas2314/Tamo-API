@@ -1,4 +1,6 @@
 import time
+import secrets
+import string
 import flask
 
 from TamoAPI import TamoSession
@@ -6,7 +8,8 @@ from TamoAPI import TamoSession
 
 app = flask.Flask(__name__)
 
-ONLINE_ACCOUNTS = dict()  # (username, password): {timestamp: timestamp, session: session}
+ALPHABET = string.ascii_letters + string.digits
+ONLINE_ACCOUNTS = dict()  # token: {last timestamp: last timestamp, session: session}
 DOCS = {
     "log_in": {
         "request fields": {
@@ -243,6 +246,15 @@ DOCS = {
 }
 
 
+def get_token():
+    while True:
+        token = ''.join(secrets.choice(ALPHABET) for _ in range(256))
+        # is viso yra tiek variantu:
+        # 711659926691456588820198688981513283237719214167524272940980007340737850071505550367426050190853744948955339987662427844810850852717191846883823768674280839119270574786535774460628640384757837267418932039347078114901615267344319690975277428929737916031623809028545597238524149983532303848529517503894555603085813572927495336324076794731576794044444062823255544802787912646756996122962654809395519130134923611540639384237080197541181260772381917961683956924416
+        if token not in ONLINE_ACCOUNTS:
+            return token
+
+
 def get_user(key):
     try:
         return ONLINE_ACCOUNTS[key]["session"]
@@ -307,30 +319,19 @@ def log_in():
         return flask.abort(400, "No json payload")
     username = data.get("username")
     password = data.get("password")
-    if (username, password) in ONLINE_ACCOUNTS:
-        get_user((username, password)).close()
-        ONLINE_ACCOUNTS[(username, password)] = {
+    if not all((username, password)):
+        return flask.abort(400, "'username' or 'password' is not specified")
+    token = get_token()
+    try:
+        ONLINE_ACCOUNTS[token] = {
             "last timestamp": ctime,
             "session": TamoSession(username, password)
         }
-        resp = flask.make_response()
-        resp.set_cookie("username", username)
-        resp.set_cookie("password", password)
-        return resp
-    if not all((username, password)):
-        flask.abort(400, "'username' or 'password' is not specified")
-    else:
-        try:
-            ONLINE_ACCOUNTS[(username, password)] = {
-                "last timestamp": ctime,
-                "session": TamoSession(username, password)
-            }
-        except AssertionError:
-            return flask.abort(401, "Incorrect Username/Password")
-        resp = flask.make_response()
-        resp.set_cookie("username", username)
-        resp.set_cookie("password", password)
-        return resp  # success
+    except AssertionError:
+        return flask.abort(401, "Incorrect Username/Password")
+    resp = flask.make_response()
+    resp.set_cookie("token", token)
+    return resp
 
 
 @app.route("/tvarkarastis", methods=["post", "get"])
@@ -338,7 +339,7 @@ def tvarkarastis():
     if flask.request.method == "GET":
         return DOCS["tvarkarastis"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     try:
         savaite = flask.request.get_json(silent=True).get("savaite")
     except AttributeError:
@@ -351,7 +352,7 @@ def dienynas():
     if flask.request.method == "GET":
         return DOCS["dienynas"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     json = flask.request.get_json(silent=True)
     if json is not None:
         metai = json.get("metai")
@@ -366,7 +367,7 @@ def pamokos():
     if flask.request.method == "GET":
         return DOCS["pamokos"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     json = flask.request.get_json(silent=True)
     if json is not None:
         metai = json.get("metai")
@@ -382,7 +383,7 @@ def namu_darbai():
     if flask.request.method == "GET":
         return DOCS["namu_darbai"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     json = flask.request.get_json(silent=True)
     if json is not None:
         nuo_data = json.get("nuo data")
@@ -399,7 +400,7 @@ def atsiskaitomieji_darbai():
     if flask.request.method == "GET":
         return DOCS["atsiskaitomieji_darbai"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     json = flask.request.get_json(silent=True)
     if json is not None:
         metai = json.get("metai")
@@ -415,7 +416,7 @@ def pastabos():
     if flask.request.method == "GET":
         return DOCS["pastabos"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     return flask.jsonify(user.pastabos())
 
 
@@ -424,7 +425,7 @@ def pusmeciai():
     if flask.request.method == "GET":
         return DOCS["pusmeciai"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     json = flask.request.get_json(silent=True)
     if json is not None:
         pusmecio_id = json.get("pusmecio id")
@@ -438,7 +439,7 @@ def pranesimai():
     if flask.request.method == "GET":
         return DOCS["pranesimai"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     json = flask.request.get_json(silent=True)
     if json is not None:
         puslapis = json.get("puslapis", 1)
@@ -454,7 +455,7 @@ def pranesimas():
     if flask.request.method == "GET":
         return DOCS["pranesimas"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     json = flask.request.get_json(silent=True)
     if json is None:
         return flask.abort(400, "No json payload")
@@ -474,7 +475,7 @@ def file_url():
     if flask.request.method == "GET":
         return DOCS["file_url"]
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     json = flask.request.get_json(silent=True)
     if json is None:
         return flask.abort(400, "No json payload")
@@ -494,7 +495,7 @@ def proxy():
         return DOCS["proxy"]
 
     data = flask.request.cookies
-    user = get_user((data.get("username"), data.get("password")))
+    user = get_user(data.get("token"))
     json = flask.request.get_json(silent=True)
     if json is None:
         return flask.abort(400, "No json payload")
