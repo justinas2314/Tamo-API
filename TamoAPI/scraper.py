@@ -315,9 +315,6 @@ def pamokos(session, parser, metai, menesis, mmid):
 
 
 def namu_darbai(session, parser, nuo_data, iki_data, dalyko_id, metodas):
-    """
-    sitas dependina style=xxx search bet turbut tamo nieko nekeis
-    """
     if nuo_data is None or iki_data is None:
         soup = bs4.BeautifulSoup(open_url(session, "https://dienynas.tamo.lt/Darbai/NamuDarbai"), parser)
     else:
