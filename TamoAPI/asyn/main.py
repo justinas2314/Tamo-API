@@ -87,7 +87,7 @@ class TamoSession:
 
     async def pamokos(self, metai: int = None, menuo: int = None, mmid: int = None):
         """
-        :param mmid: naudojamas https://dienynas.tamo.lt/Pamoka/MokinioPamokuPartial?moksloMetuMenesiaiId=X&krautiVisaMenesi=True        :param metai: deprecated
+        :param mmid: naudojamas https://dienynas.tamo.lt/Pamoka/MokinioPamokuPartial?moksloMetuMenesiaiId=X&krautiVisaMenesi=True
         :param menuo: deprecated
         :param metai: deprecated
         :return: [
