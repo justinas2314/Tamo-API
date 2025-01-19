@@ -48,7 +48,7 @@ with TamoSession(USERNAME, PASSWORD, timeout=1) as session:
         del namu_darbo_irasas['mokytojas']
         pprint.pprint(namu_darbo_irasas)
 
-    pusmeciu_duomenys = session.pusmeciai(1)
+    pusmeciu_duomenys = session.pusmeciai()
 
     print('Vidurkis:')
     pprint.pprint(pusmeciu_duomenys['vidurkis'])
@@ -79,7 +79,7 @@ async def main():
             del namu_darbo_irasas['mokytojas']
             pprint.pprint(namu_darbo_irasas)
 
-        pusmeciu_duomenys = await session.pusmeciai(1)
+        pusmeciu_duomenys = await session.pusmeciai()
 
         print('Vidurkis:')
         pprint.pprint(pusmeciu_duomenys['vidurkis'])
