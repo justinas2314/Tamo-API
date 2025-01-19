@@ -83,6 +83,9 @@ class TamoSession:
 
     def pamokos(self, metai: int = None, menuo: int = None, mmid: int = None):
         """
+        :param mmid: naudojamas https://dienynas.tamo.lt/Pamoka/MokinioPamokuPartial?moksloMetuMenesiaiId=X&krautiVisaMenesi=True
+        :param menuo: deprecated
+        :param metai: deprecated
         :return: [
                     {
                         "dalykas": str,
@@ -146,6 +149,9 @@ class TamoSession:
 
     def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None, mmid: int = None):
         """
+        :param mmid: randamas https://dienynas.tamo.lt/Darbai/Atsiskaitymai?MoksloMetuMenesioId=X
+        :param metai: deprecated
+        :param menuo: deprecated
         :return: [
                     {
                         "response fields": {
@@ -190,7 +196,7 @@ class TamoSession:
 
     def pusmeciai(self, pusmecio_id: int = None):
         """
-        :param pusmecio_id: 0 -> metinis; 1 -> pirmas pusmetis; 2-> antras pusmetis;
+        :param pusmecio_id: 0 -> metinis, randamas url https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/X"
         :return: {
                     "vidurkis": {
                         "pazymiu": float or None,
