@@ -1,4 +1,4 @@
-import time
+import asyncio
 
 import aiohttp
 from TamoAPI.asyn import scraper
@@ -50,7 +50,7 @@ class TamoSession:
                     }, ...
                 ]
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.tvarkarastis(self.session, self._parser, savaite)
 
     async def dienynas(self, metai: int = None, menuo: int = None):
@@ -82,11 +82,14 @@ class TamoSession:
                     ]
                 }
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.dienynas(self.session, self._parser, metai, menuo)
 
     async def pamokos(self, metai: int = None, menuo: int = None, mmid: int = None):
         """
+        :param mmid: naudojamas https://dienynas.tamo.lt/Pamoka/MokinioPamokuPartial?moksloMetuMenesiaiId=X&krautiVisaMenesi=True        :param metai: deprecated
+        :param menuo: deprecated
+        :param metai: deprecated
         :return: [
                     {
                         "dalykas": str,
@@ -103,7 +106,7 @@ class TamoSession:
                     }, ...
                 ]
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.pamokos(self.session, self._parser, metai, menuo, mmid)
 
     async def namu_darbai(self, nuo_data: str = None, iki_data: str = None, dalyko_id: int = 0, metodas: int = 0):
@@ -141,11 +144,14 @@ class TamoSession:
                     }, ...
                 ]
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.namu_darbai(self.session, self._parser, nuo_data, iki_data, dalyko_id, metodas)
 
     async def atsiskaitomieji_darbai(self, metai: int = None, menuo: int = None, mmid: int = None):
         """
+        :param mmid: randamas https://dienynas.tamo.lt/Darbai/Atsiskaitymai?MoksloMetuMenesioId=X
+        :param metai: deprecated
+        :param menuo: deprecated
         :return: [
                     {
                         "response fields": {
@@ -159,7 +165,7 @@ class TamoSession:
                     }, ...
                 ]
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.atsiskaitomieji_darbai(self.session, self._parser, metai, menuo, mmid)
 
     async def pastabos(self):
@@ -185,12 +191,12 @@ class TamoSession:
                     }, ...
                 ]
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.pastabos(self.session, self._parser)
 
     async def pusmeciai(self, pusmecio_id: int = None):
         """
-        :param pusmecio_id: 0 -> metinis; 1 -> pirmas pusmetis; 2-> antras pusmetis;
+        :param pusmecio_id: 0 -> metinis, randamas url https://dienynas.tamo.lt/PeriodoVertinimas/MokinioVertinimai/X"
         :return: {
                     "vidurkis": {
                         "pazymiu": float or None,
@@ -218,7 +224,7 @@ class TamoSession:
                     ]
                 }
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.pusmeciai(self.session, self._parser, pusmecio_id)
 
     async def pranesimai(self, puslapis: int = 1, identification: str = None):
@@ -255,7 +261,7 @@ class TamoSession:
                     ]
                 }
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.pranesimai(self.session, puslapis, identification)
 
     async def pranesimas(self, pranesimo_id: int, identification: str = None):
@@ -273,7 +279,7 @@ class TamoSession:
                     ]
                 }
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.pranesimas(self.session, pranesimo_id, identification)
 
     async def file_url(self, file_id: str):
@@ -283,7 +289,7 @@ class TamoSession:
                     "url": str  # url parsisiusti file
                 }
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.file_url(self.session, file_id)
 
     async def proxy(self, method="get", *args, **kwargs):
@@ -292,7 +298,7 @@ class TamoSession:
         :param method: get, post, patch, ...
         :return: content from a request
         """
-        time.sleep(self.timeout)
+        await asyncio.sleep(self.timeout)
         return await scraper.proxy(self.session, method.lower(), *args, **kwargs)
 
     async def close(self):
