@@ -507,3 +507,4 @@ def proxy():
         return flask.abort(400, "Something went wrong possibly with the json payload")
 
 
+app.run()
