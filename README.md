@@ -25,7 +25,7 @@ gunicorn --bind 0.0.0.0:5000 wsgi:app
 Norėdami sukurti ir paleisti Docker/Podman konteinerį su šiuo API:
 ```bash
 docker build -t tamo-api .
-docker run -p 5000:5000 tamo-api
+docker run -p 5000:5001 tamo-api
 ```
 
 ## Ką galima su šitu API padaryti?
