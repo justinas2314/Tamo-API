@@ -1,0 +1,9 @@
+# Virtual envs
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Rope project settings
+.ropeproject/

@@ -191,7 +191,7 @@ def tvarkarastis(session, parser, savaite):
     data = []
     for i in soup.find_all("table", class_="full_width form-horizontal table table-hover table-responsive"):
         temp = []
-        for j in i.find_all("tr")[1:]:
+        for j in i.find_all("tr"):
             temper = dict(zip(("numeris", "laikas", "pabaiga", "dalykas", "mokytojas"),
                               map(lambda x: x.text.strip(), j.find_all("td"))))
             try:
