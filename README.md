@@ -1,7 +1,7 @@
 # Tamo-API
 Tamo.lt scraper that acts as an unofficial API  
 ## Šitas repo labai senas
-Kadangi dar 2023 baigiau gimnaziją ir tada praradau savo paskyrą, nebegaliu užtikrinti, kad visas kodas vis dar veikia teisingai. Nuo to laiko šitas kodas be garantijos, kad veikia. Skatinu radus bug sukurti issue arba jį pafixinti forke.  
+Kadangi dar 2023 baigiau gimnaziją ir praradau savo tamo.lt paskyrą, nuo to laiko nebegaliu užtikrinti, kad visas kodas vis dar veikia teisingai.Skatinu radus bug sukurti issue arba jį pafixinti forke.  
 Taip pat egzistuoja šviežesnė alternatyva šitam projektui čia: https://github.com/sobakintech/tamo-dienynas-api.
 ## Perspėjimai
 Norint naudoti API reikia duoti script/server savo prisijungimo duomenis, o tai įprastai yra bloga idėja, tai prašau įsitikinti, kad šis API nieko blogo nedarys.  
